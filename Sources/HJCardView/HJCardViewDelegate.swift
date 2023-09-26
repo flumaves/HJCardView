@@ -1,6 +1,6 @@
 import Foundation
 
-protocol HJCardViewDelegate {
+public protocol HJCardViewDelegate {
     
     //func cardView(_ cardView: HJCardView, didSelectedItemAtIndex: Int)
     

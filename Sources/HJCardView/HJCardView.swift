@@ -1,7 +1,7 @@
 import UIKit
 
 /// HJCardView
-class HJCardView: UIView {
+public class HJCardView: UIView {
     
     var delegate: HJCardViewDelegate?
     
@@ -24,7 +24,7 @@ class HJCardView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func layoutSubviews() {
+    public override func layoutSubviews() {
         
         if self.visiableItems.count() > 0 { return }
         
@@ -553,7 +553,7 @@ extension HJCardView {
 }
 
 
-class HJCardViewItem: UIView {
+public class HJCardViewItem: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
