@@ -1,0 +1,11 @@
+import XCTest
+@testable import HJCardView
+
+final class HJCardViewTests: XCTestCase {
+    func testExample() throws {
+        // This is an example of a functional test case.
+        // Use XCTAssert and related functions to verify your tests produce the correct
+        // results.
+        XCTAssertEqual(HJCardView().text, "Hello, World!")
+    }
+}
