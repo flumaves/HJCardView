@@ -1,3 +1,4 @@
 # HJCardView
 
-A description of this package.
+A view that shows a serious of Cards
+
