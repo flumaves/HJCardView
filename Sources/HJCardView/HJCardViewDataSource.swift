@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol HJCardViewDataSource {
+public protocol HJCardViewDataSource: AnyObject {
     
     /// return how many items would show in the card view
     func numberOfItemsInCardView() -> Int

@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol HJCardViewDelegate {
+public protocol HJCardViewDelegate: AnyObject {
     
     //func cardView(_ cardView: HJCardView, didSelectedItemAtIndex: Int)
     
@@ -65,5 +65,46 @@ public protocol HJCardViewDelegate {
      * the default value is 1.0
      */
     func distanceRatioToCenterOfCenterItem() -> CGFloat
+    
+}
+
+let DefaultNumberOfItemsInSingleDirection: Int        = 5
+let DefaultAngleRotationOfEdgeItem: CGFloat           = .pi/9
+let DefaultScalingRatioOfEdgeItem: CGFloat            = 0.8
+let DefaultDistanceRatioToCenterOfEdgeItem: CGFloat   = 0.8
+let DefaultAngleRotationOfCenterItem: CGFloat         = .pi/6
+let DefaultScalingRatioOfCenterItem: CGFloat          = 0.6
+let DefaultDistanceRatioToCenterOfCenterItem: CGFloat = 1.0
+
+
+extension HJCardViewDelegate {
+    
+    func numberOfItemsInSingleDirection() -> Int {
+        return DefaultNumberOfItemsInSingleDirection
+    }
+    
+    func angleRotationOfEdgeItem() -> CGFloat {
+        return DefaultAngleRotationOfEdgeItem
+    }
+    
+    func scalingRatioOfEdgeItem() -> CGFloat {
+        return DefaultScalingRatioOfEdgeItem
+    }
+    
+    func distanceRatioToCenterOfEdgeItem() -> CGFloat {
+        return DefaultDistanceRatioToCenterOfEdgeItem
+    }
+    
+    public func angleRotationOfCenterItem() -> CGFloat {
+        return DefaultAngleRotationOfCenterItem
+    }
+    
+    func scalingRatioOfCenterItem() -> CGFloat {
+        return DefaultScalingRatioOfCenterItem
+    }
+    
+    func distanceRatioToCenterOfCenterItem() -> CGFloat {
+        return DefaultDistanceRatioToCenterOfCenterItem
+    }
     
 }
