@@ -36,7 +36,6 @@ public class HJCardView: UIView {
             self.sendSubviewToBack(item)
             self.addSubview(item)
             
-            
             let itemWithIndex = ItemWithIndex(item: item, index: index)
             self.visiableItems.addItemToRight(itemWithIndex)
         }
@@ -44,7 +43,6 @@ public class HJCardView: UIView {
         setItemsDistanceToCenter()
     }
 }
-
 
 extension HJCardView {
     
@@ -150,7 +148,6 @@ extension HJCardView {
     }
 }
 
-
 extension HJCardView {
 
     @objc private func panItem(_ sender: UIPanGestureRecognizer) {
@@ -161,18 +158,16 @@ extension HJCardView {
         if sender.state == .changed {
             let otherItems = self.visiableItems.itemsExceptCenterItem()
             
-            // 计算每个卡片移动距离
-            let maxDistanceCenterItemMove = distanceToCenterOfCenterItem() // centerItem 最大移动距离
-            let distanceRatioCenterItem = panOffSet.x / maxDistanceCenterItemMove / 1.5  // 中间卡片移动的比例
-            let distanceOtherItemMove = distanceToCenterOfEdgeItem() / CGFloat(numberOfItemsInSingleDirection() - 1) * distanceRatioCenterItem   // 其余卡片移动的距离
+            // calculate the length that remaining items should move based on the proportion of the distance moved by the center item to the maximum moving distance of the center item
+            let maxDistanceCenterItemMove = distanceToCenterOfCenterItem()
+            let distanceRatioCenterItem = panOffSet.x / maxDistanceCenterItemMove / 1.5
+            let distanceOtherItemMove = distanceToCenterOfEdgeItem() / CGFloat(numberOfItemsInSingleDirection() - 1) * distanceRatioCenterItem
             
-            // other item 的拖动效果
             for item in otherItems {
                 let distance = item.center.x + distanceOtherItemMove - center
                 setItem(item, distanceToCenter: distance)
             }
-            
-            // center item 的拖动效果
+
             if let centerItem = self.visiableItems.centerItem() {
                 let distance = centerItem.item.center.x - center + panOffSet.x
                 setCenterItem(centerItem.item, distanceToCenter: distance)
@@ -182,12 +177,13 @@ extension HJCardView {
             
         } else if sender.state == .ended {
             
-            // 判断更新 center item 还是归位
+            // determine whether to update or restore based on the proportion of center item movement
             guard let centerItem = self.visiableItems.centerItem() else { return }
             let ratio = (centerItem.item.center.x - center) / distanceToCenterOfCenterItem()
             
-            if ratio <= -0.9 {  // 往左移动一格
-                if let centerItemIndex = self.visiableItems.centerItem()?.index, centerItemIndex + 1 < numberOfItemsInCardView() {  // 判断能否左移
+            // move one step to the left
+            if ratio <= -0.9 {
+                if let centerItemIndex = self.visiableItems.centerItem()?.index, centerItemIndex + 1 < numberOfItemsInCardView() {
                     if let delelteItem = self.visiableItems.allItemsMoveLeft() {
                         delelteItem.removeFromSuperview()
                     }
@@ -197,7 +193,6 @@ extension HJCardView {
                     
                     let newItemIndex = farRightItemIndex + 1
                     
-                    // 获取 index 添加 item
                     if let dataSource = self.dataSource {
                         let newItem = dataSource.cardView(self, itemForIndex: newItemIndex)
                         let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
@@ -218,9 +213,10 @@ extension HJCardView {
                         self.visiableItems.addItemToRight(newItemWithIndex)
                     }
                 }
-                
+            
+            // move one step to the right
             } else if ratio >= 0.9 {
-                if let centerItemIndex = self.visiableItems.centerItem()?.index, centerItemIndex - 1 >= 0 {   // 判断能否右移
+                if let centerItemIndex = self.visiableItems.centerItem()?.index, centerItemIndex - 1 >= 0 {
                     if let deleteItem = self.visiableItems.allItemsMoveRight() {
                         deleteItem.removeFromSuperview()
                     }
@@ -230,7 +226,6 @@ extension HJCardView {
                     
                     let newItemIndex = farLeftItemIndex - 1
                     
-                    // 获取 index 添加 item
                     if let dataSource = self.dataSource {
                         let newItem = dataSource.cardView(self, itemForIndex: newItemIndex)
                         let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
@@ -251,8 +246,6 @@ extension HJCardView {
                         self.visiableItems.addItemToLeft(newItemWithIndex)
                     }
                 }
-                
-                
             }
             
             UIView.animate(withDuration: 0.25) {
@@ -262,7 +255,6 @@ extension HJCardView {
     }
     
 }
-
 
 // data structrue of card view
 extension HJCardView {
@@ -481,7 +473,6 @@ extension HJCardView {
     }
 }
 
-
 extension HJCardView {
 
     private func numberOfItemsInSingleDirection() -> Int {
@@ -552,7 +543,6 @@ extension HJCardView {
     
 }
 
-
 public class HJCardViewItem: UIView {
     
     override init(frame: CGRect) {
@@ -567,5 +557,4 @@ public class HJCardViewItem: UIView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
 }
