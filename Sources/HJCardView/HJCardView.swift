@@ -12,7 +12,7 @@ public class HJCardView: UIView {
     /// items shows on the screen
     private var visiableItems = Items()
     
-    override init(frame: CGRect) {
+    public override init(frame: CGRect) {
         super.init(frame: frame)
         
         let pan = UIPanGestureRecognizer.init(target: self, action: #selector(panItem(_:)))
