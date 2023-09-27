@@ -4,7 +4,7 @@ public protocol HJCardViewDelegate: AnyObject {
     
     //func cardView(_ cardView: HJCardView, didSelectedItemAtIndex: Int)
     
-    func cardView(_ cardView: HJCardView, itemSizeAt index: Int) -> CGSize
+    func itemSize(of cardView: HJCardView) -> CGSize
     
 // setting for edge items
     
@@ -57,7 +57,7 @@ public protocol HJCardViewDelegate: AnyObject {
     /**
      * the scaling ratio when the center item is dragged to the edge
      *
-     * the default value is 0.6
+     * the default value is 0.8
      */
     func scalingRatioOfCenterItem() -> CGFloat
     
@@ -74,13 +74,13 @@ let DefaultAngleRotationOfEdgeItem: CGFloat           = .pi/9
 let DefaultScalingRatioOfEdgeItem: CGFloat            = 0.8
 let DefaultDistanceRatioToCenterOfEdgeItem: CGFloat   = 0.8
 let DefaultAngleRotationOfCenterItem: CGFloat         = .pi/6
-let DefaultScalingRatioOfCenterItem: CGFloat          = 0.6
+let DefaultScalingRatioOfCenterItem: CGFloat          = 0.8
 let DefaultDistanceRatioToCenterOfCenterItem: CGFloat = 1.0
 
 
 extension HJCardViewDelegate {
     
-    public func cardView(_ cardView: HJCardView, itemSizeAt index: Int) -> CGSize {
+    public func itemSize(of cardView: HJCardView) -> CGSize {
         return CGSize.zero
     }
     

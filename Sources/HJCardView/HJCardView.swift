@@ -38,7 +38,7 @@ public class HJCardView: UIView {
         
         for index in 0..<numberOfItemsInSingleDirection() {
             let item = dataSource.cardView(self, itemAt: index)
-            item.bounds.size = itemSize(at: index)
+            item.bounds.size = itemSize()
             item.frame.origin.y = self.bounds.origin.y
             
             self.sendSubviewToBack(item)
@@ -94,15 +94,14 @@ extension HJCardView {
         
         // scale
         let scaleRatio = minScaleRatio + (1 - abs(distance) / maxDistanceToCenter) * (1 - minScaleRatio)
-        let defaultH = self.bounds.size.height - 20
-        let itemH = defaultH * scaleRatio, itemW = itemH * 0.75 // itemH : itemW = 4 : 3
-        item.bounds.size = CGSize(width: itemW, height: itemH)
+        let scaleMatrix = CGAffineTransform(scaleX: scaleRatio, y: scaleRatio)
         
         // rotate
         let rotateRatio = distance / maxDistanceToCenter
         let rotateAngle = maxRotateAngle * rotateRatio
-        item.transform = CGAffineTransform(rotationAngle: rotateAngle)
-//        let rotate = CGAffineTransform(rotationAngle: rotateAngle)
+        let rotateMatrix = CGAffineTransform(rotationAngle: rotateAngle)
+        
+        item.transform = scaleMatrix.concatenating(rotateMatrix)
         
         // zPosition
         item.layer.zPosition = -abs(distance)
@@ -123,14 +122,14 @@ extension HJCardView {
         
         // scale
         let scaleRatio = minScaleRatio + (1 - abs(distance) / maxDistanceToCenter) * (1 - minScaleRatio)
-        let defaultH = self.bounds.size.height - 20
-        let itemH = defaultH * scaleRatio, itemW = itemH * 0.75 // itemH : itemW = 4 : 3
-        item.bounds = CGRect(x: 0, y: 0, width: itemW, height: itemH)
+        let scaleMatrix = CGAffineTransform(scaleX: scaleRatio, y: scaleRatio)
         
         // rotate
         let rotateRatio = distance / maxDistanceToCenter
         let rotateAngle = maxRotateAngle * rotateRatio
-        item.transform = CGAffineTransform(rotationAngle: rotateAngle)
+        let rotateMatrix = CGAffineTransform(rotationAngle: rotateAngle)
+        
+        item.transform = scaleMatrix.concatenating(rotateMatrix)
         
         // zPosition
         //        item.layer.zPosition = -abs(distance)
@@ -151,14 +150,14 @@ extension HJCardView {
         
         // scale
         let scaleRatio = minScaleRatio + (1 - abs(distance) / maxDistanceToCenter) * (1 - minScaleRatio)
-        let defaultH = self.bounds.size.height - 20
-        let itemH = defaultH * scaleRatio, itemW = itemH * 0.75 // itemH : itemW = 4 : 3
-        item.bounds = CGRect(x: 0, y: 0, width: itemW, height: itemH)
+        let scaleMatrix = CGAffineTransform(scaleX: scaleRatio, y: scaleRatio)
         
         // rotate
         let rotateRatio = distance / maxDistanceToCenter
         let rotateAngle = maxRotateAngle * rotateRatio
-        item.transform = CGAffineTransform(rotationAngle: rotateAngle)
+        let rotateMatrix = CGAffineTransform(rotationAngle: rotateAngle)
+        
+        item.transform = scaleMatrix.concatenating(rotateMatrix)
     }
 }
 
@@ -489,9 +488,9 @@ extension HJCardView {
 
 extension HJCardView {
 
-    private func itemSize(at index: Int) -> CGSize {
-        if let delegate = delegate, delegate.cardView(self, itemSizeAt: index) != CGSize.zero {
-            return delegate.cardView(self, itemSizeAt: index)
+    private func itemSize() -> CGSize {
+        if let delegate = delegate, delegate.itemSize(of: self) != CGSize.zero {
+            return delegate.itemSize(of: self)
         }
         
         let itemH = self.frame.height * 0.8, itemW = itemH * 3 / 4
