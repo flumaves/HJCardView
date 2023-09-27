@@ -31,7 +31,7 @@ public class HJCardView: UIView {
         guard let dataSource = self.dataSource else { return }
         
         for index in 0..<numberOfItemsInSingleDirection() {
-            let item = dataSource.cardView(self, itemAtIndex: index)
+            let item = dataSource.cardView(self, itemAt: index)
             item.bounds.size = itemSize(at: index)
             item.frame.origin.y = self.bounds.origin.y
             
@@ -76,6 +76,7 @@ extension HJCardView {
     private func setItem(_ item: HJCardViewItem, distanceToCenter distance: CGFloat) {
         
         let centerX = self.bounds.size.width / 2
+        let centerY = self.bounds.size.height / 2
         
         let maxDistanceToCenter = distanceToCenterOfEdgeItem()
         let minScaleRatio = scalingRatioOfEdgeItem()
@@ -83,12 +84,13 @@ extension HJCardView {
         
         // position
         item.center.x = centerX + distance
+        item.center.y = centerY
         
         // scale
         let scaleRatio = minScaleRatio + (1 - abs(distance) / maxDistanceToCenter) * (1 - minScaleRatio)
         let defaultH = self.bounds.size.height - 20
         let itemH = defaultH * scaleRatio, itemW = itemH * 0.75 // itemH : itemW = 4 : 3
-        item.bounds = CGRect(x: 0, y: 0, width: itemW, height: itemH)
+        item.bounds.size = CGSize(width: itemW, height: itemH)
         
         // rotate
         let rotateRatio = distance / maxDistanceToCenter
@@ -196,7 +198,7 @@ extension HJCardView {
                     let newItemIndex = farRightItemIndex + 1
                     
                     if let dataSource = self.dataSource {
-                        let newItem = dataSource.cardView(self, itemAtIndex: newItemIndex)
+                        let newItem = dataSource.cardView(self, itemAt: newItemIndex)
                         let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
                         
                         let farRightItem = self.visiableItems.farRightItem()!.item
@@ -229,7 +231,7 @@ extension HJCardView {
                     let newItemIndex = farLeftItemIndex - 1
                     
                     if let dataSource = self.dataSource {
-                        let newItem = dataSource.cardView(self, itemAtIndex: newItemIndex)
+                        let newItem = dataSource.cardView(self, itemAt: newItemIndex)
                         let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
                         
                         let farLeftItem = self.visiableItems.farLeftItem()!.item
