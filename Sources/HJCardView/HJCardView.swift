@@ -9,6 +9,8 @@ public class HJCardView: UIView {
         }
     }
     
+    public var placementDirection: HJCardView.PlacementDirection = .horizontal
+    
     public var dataSource: HJCardViewDataSource?
     
     private var panAction: UIPanGestureRecognizer?
@@ -537,6 +539,15 @@ extension HJCardView {
     private func numberOfItemsInCardView() -> Int {
         return dataSource?.numberOfItemsInCardView() ?? 0
     }
+}
+
+extension HJCardView {
+    
+    public enum PlacementDirection {
+        case horizontal
+        case vertical
+    }
+    
 }
 
 public class HJCardViewItem: UIView {
