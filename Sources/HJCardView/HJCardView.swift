@@ -105,6 +105,7 @@ extension HJCardView {
     private func setCenterItem(_ item: HJCardViewItem, distanceToCenter distance: CGFloat) {
         
         let centerX = self.bounds.size.width / 2
+        let centerY = self.bounds.size.height / 2
         
         let maxDistanceToCenter = distanceToCenterOfCenterItem()
         let minScaleRatio = scalingRatioOfCenterItem()
@@ -112,6 +113,7 @@ extension HJCardView {
         
         // position
         item.center.x = centerX + distance
+        item.center.y = centerY
         
         // scale
         let scaleRatio = minScaleRatio + (1 - abs(distance) / maxDistanceToCenter) * (1 - minScaleRatio)
@@ -131,6 +133,7 @@ extension HJCardView {
     private func setNewItem(_ item: HJCardViewItem, distanceToCenter distance: CGFloat) {
         
         let centerX = self.bounds.size.width / 2
+        let centerY = self.bounds.size.height / 2
         
         let maxDistanceToCenter = distanceToCenterOfEdgeItem()
         let minScaleRatio = scalingRatioOfEdgeItem()
@@ -138,6 +141,7 @@ extension HJCardView {
         
         // position
         item.center.x = centerX + distance
+        item.center.y = centerY
         
         // scale
         let scaleRatio = minScaleRatio + (1 - abs(distance) / maxDistanceToCenter) * (1 - minScaleRatio)
