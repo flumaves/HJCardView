@@ -558,6 +558,7 @@ public class HJCardViewItem: UIView {
         self.backgroundColor = .systemGray
         self.layer.borderColor = UIColor.black.cgColor
         self.layer.borderWidth = 2.0
+        self.clipsToBounds = true
     }
     
     required init?(coder: NSCoder) {
