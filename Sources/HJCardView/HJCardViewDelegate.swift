@@ -4,7 +4,16 @@ public protocol HJCardViewDelegate: AnyObject {
     
     //func cardView(_ cardView: HJCardView, didSelectedItemAtIndex: Int)
     
+    /// the size of the item closest to the center item
     func itemSize(of cardView: HJCardView) -> CGSize
+    
+    /**
+     * the size of the center item
+     *
+     * when the method 'centerItemSize(of:)' isn't implemented, the size of the center item is equal to the item size
+     */
+    func centerItemSize(of cardView: HJCardView) -> CGSize
+    
     
 // setting for edge items
     
@@ -16,7 +25,7 @@ public protocol HJCardViewDelegate: AnyObject {
      *
      * the default value is 5
      */
-    func numberOfItemsInSingleDirection() -> Int
+    func numberOfItemsInSingleDirection(of cardView: HJCardView) -> Int
     
     /**
      * the rotation angle of the item located at the edge,
@@ -25,7 +34,7 @@ public protocol HJCardViewDelegate: AnyObject {
      *
      * the default value is .pi/9.
      */
-    func angleRotationOfEdgeItem() -> CGFloat
+    func angleRotationOfEdgeItem(of CardView: HJCardView) -> CGFloat
     
     /**
      * the scaling ratio of the edge items to the center item
@@ -33,7 +42,7 @@ public protocol HJCardViewDelegate: AnyObject {
      *
      * the default value is 0.8
      */
-    func scalingRatioOfEdgeItem() -> CGFloat
+    func scalingRatioOfEdgeItem(of cardView: HJCardView) -> CGFloat
     
     /**
      * the ratio that ( edge item distance to center / half width of  the card view)
@@ -42,7 +51,7 @@ public protocol HJCardViewDelegate: AnyObject {
      *
      * the default value is 0.8
      */
-    func distanceRatioToCenterOfEdgeItem() -> CGFloat
+    func distanceRatioToCenterOfEdgeItem(of cardView: HJCardView) -> CGFloat
     
     
 // setting for center item
@@ -52,21 +61,21 @@ public protocol HJCardViewDelegate: AnyObject {
      *
      * the default value is .pi/6
      */
-    func angleRotationOfCenterItem() -> CGFloat
+    func angleRotationOfCenterItem(of cardView: HJCardView) -> CGFloat
     
     /**
      * the scaling ratio when the center item is dragged to the edge
      *
      * the default value is 0.8
      */
-    func scalingRatioOfCenterItem() -> CGFloat
+    func scalingRatioOfCenterItem(of cardView: HJCardView) -> CGFloat
     
     /**
      * the ratio that (center item max distance to center while dragging / half width of the card view)
      *
      * the default value is 1.0
      */
-    func distanceRatioToCenterOfCenterItem() -> CGFloat
+    func distanceRatioToCenterOfCenterItem(of cardView: HJCardView) -> CGFloat
 }
 
 let DefaultNumberOfItemsInSingleDirection: Int        = 5
@@ -84,31 +93,35 @@ extension HJCardViewDelegate {
         return CGSize.zero
     }
     
-    public func numberOfItemsInSingleDirection() -> Int {
+    public func centerItemSize(of cardView: HJCardView) -> CGSize {
+        return itemSize(of: cardView)
+    }
+    
+    public func numberOfItemsInSingleDirection(of cardView: HJCardView) -> Int {
         return DefaultNumberOfItemsInSingleDirection
     }
     
-    public func angleRotationOfEdgeItem() -> CGFloat {
+    public func angleRotationOfEdgeItem(of cardView: HJCardView) -> CGFloat {
         return DefaultAngleRotationOfEdgeItem
     }
     
-    public func scalingRatioOfEdgeItem() -> CGFloat {
+    public func scalingRatioOfEdgeItem(of cardView: HJCardView) -> CGFloat {
         return DefaultScalingRatioOfEdgeItem
     }
     
-    public func distanceRatioToCenterOfEdgeItem() -> CGFloat {
+    public func distanceRatioToCenterOfEdgeItem(of cardView: HJCardView) -> CGFloat {
         return DefaultDistanceRatioToCenterOfEdgeItem
     }
     
-    public func angleRotationOfCenterItem() -> CGFloat {
+    public func angleRotationOfCenterItem(of cardView: HJCardView) -> CGFloat {
         return DefaultAngleRotationOfCenterItem
     }
     
-    public func scalingRatioOfCenterItem() -> CGFloat {
+    public func scalingRatioOfCenterItem(of cardView: HJCardView) -> CGFloat {
         return DefaultScalingRatioOfCenterItem
     }
     
-    public func distanceRatioToCenterOfCenterItem() -> CGFloat {
+    public func distanceRatioToCenterOfCenterItem(of cardView: HJCardView) -> CGFloat {
         return DefaultDistanceRatioToCenterOfCenterItem
     }
     

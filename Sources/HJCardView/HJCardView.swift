@@ -497,20 +497,28 @@ extension HJCardView {
         return CGSize(width: itemW, height: itemH)
     }
     
+    private func centerItemSize() -> CGSize {
+        if let delegate = delegate, delegate.centerItemSize(of: self) != CGSize.zero {
+            return delegate.centerItemSize(of: self)
+        }
+        
+        return itemSize()
+    }
+    
     private func numberOfItemsInSingleDirection() -> Int {
-        return delegate?.numberOfItemsInSingleDirection() ?? DefaultNumberOfItemsInSingleDirection
+        return delegate?.numberOfItemsInSingleDirection(of: self) ?? DefaultNumberOfItemsInSingleDirection
     }
     
     private func angleRotationOfEdgeItem() -> CGFloat {
-        return delegate?.angleRotationOfEdgeItem() ?? DefaultAngleRotationOfEdgeItem
+        return delegate?.angleRotationOfEdgeItem(of: self) ?? DefaultAngleRotationOfEdgeItem
     }
     
     private func scalingRatioOfEdgeItem() -> CGFloat {
-        return delegate?.scalingRatioOfEdgeItem() ?? DefaultScalingRatioOfEdgeItem
+        return delegate?.scalingRatioOfEdgeItem(of: self) ?? DefaultScalingRatioOfEdgeItem
     }
     
     private func distanceRatioToCenterOfEdgeItem() -> CGFloat {
-        return delegate?.distanceRatioToCenterOfEdgeItem() ?? DefaultDistanceRatioToCenterOfEdgeItem
+        return delegate?.distanceRatioToCenterOfEdgeItem(of: self) ?? DefaultDistanceRatioToCenterOfEdgeItem
     }
     
     private func distanceToCenterOfEdgeItem() -> CGFloat {
@@ -519,15 +527,15 @@ extension HJCardView {
     }
     
     private func angleRotationOfCenterItem() -> CGFloat {
-        return delegate?.angleRotationOfCenterItem() ?? DefaultAngleRotationOfCenterItem
+        return delegate?.angleRotationOfCenterItem(of: self) ?? DefaultAngleRotationOfCenterItem
     }
     
     private func scalingRatioOfCenterItem() -> CGFloat {
-        return delegate?.scalingRatioOfCenterItem() ?? DefaultScalingRatioOfCenterItem
+        return delegate?.scalingRatioOfCenterItem(of: self) ?? DefaultScalingRatioOfCenterItem
     }
     
     private func distanceRatioToCenterOfCenterItem() -> CGFloat {
-        return delegate?.distanceRatioToCenterOfCenterItem() ?? DefaultDistanceRatioToCenterOfCenterItem
+        return delegate?.distanceRatioToCenterOfCenterItem(of: self) ?? DefaultDistanceRatioToCenterOfCenterItem
     }
     
     private func distanceToCenterOfCenterItem() -> CGFloat {
