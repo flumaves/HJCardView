@@ -208,6 +208,7 @@ extension HJCardView {
                     
                     if let dataSource = self.dataSource {
                         let newItem = dataSource.cardView(self, itemAt: newItemIndex)
+                        newItem.frame.size = itemSize()
                         let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
                         
                         let farRightItem = self.visiableItems.farRightItem()!.item
@@ -241,12 +242,13 @@ extension HJCardView {
                     
                     if let dataSource = self.dataSource {
                         let newItem = dataSource.cardView(self, itemAt: newItemIndex)
+                        newItem.frame.size = itemSize()
                         let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
                         
                         let farLeftItem = self.visiableItems.farLeftItem()!.item
                         let distance = farLeftItem.center.x
                         
-                        setNewItem(newItem, distanceToCenter: distance)
+                        setNewItem(newItem, distanceToCenter: -30)
                         newItem.layer.zPosition = -1000
                         newItem.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
                         self.addSubview(newItem)
@@ -489,8 +491,8 @@ extension HJCardView {
 extension HJCardView {
 
     private func itemSize() -> CGSize {
-        if let delegate = delegate, delegate.itemSize(of: self) != CGSize.zero {
-            return delegate.itemSize(of: self)
+        if let delegate = delegate, delegate.itemSize(in: self) != CGSize.zero {
+            return delegate.itemSize(in: self)
         }
         
         let itemH = self.frame.height * 0.8, itemW = itemH * 3 / 4
@@ -498,27 +500,27 @@ extension HJCardView {
     }
     
     private func centerItemSize() -> CGSize {
-        if let delegate = delegate, delegate.centerItemSize(of: self) != CGSize.zero {
-            return delegate.centerItemSize(of: self)
+        if let delegate = delegate, delegate.centerItemSize(in: self) != CGSize.zero {
+            return delegate.centerItemSize(in: self)
         }
         
         return itemSize()
     }
     
     private func numberOfItemsInSingleDirection() -> Int {
-        return delegate?.numberOfItemsInSingleDirection(of: self) ?? DefaultNumberOfItemsInSingleDirection
+        return delegate?.numberOfItemsInSingleDirection(in: self) ?? DefaultNumberOfItemsInSingleDirection
     }
     
     private func angleRotationOfEdgeItem() -> CGFloat {
-        return delegate?.angleRotationOfEdgeItem(of: self) ?? DefaultAngleRotationOfEdgeItem
+        return delegate?.angleRotationOfEdgeItem(in: self) ?? DefaultAngleRotationOfEdgeItem
     }
     
     private func scalingRatioOfEdgeItem() -> CGFloat {
-        return delegate?.scalingRatioOfEdgeItem(of: self) ?? DefaultScalingRatioOfEdgeItem
+        return delegate?.scalingRatioOfEdgeItem(in: self) ?? DefaultScalingRatioOfEdgeItem
     }
     
     private func distanceRatioToCenterOfEdgeItem() -> CGFloat {
-        return delegate?.distanceRatioToCenterOfEdgeItem(of: self) ?? DefaultDistanceRatioToCenterOfEdgeItem
+        return delegate?.distanceRatioToCenterOfEdgeItem(in: self) ?? DefaultDistanceRatioToCenterOfEdgeItem
     }
     
     private func distanceToCenterOfEdgeItem() -> CGFloat {
@@ -527,15 +529,15 @@ extension HJCardView {
     }
     
     private func angleRotationOfCenterItem() -> CGFloat {
-        return delegate?.angleRotationOfCenterItem(of: self) ?? DefaultAngleRotationOfCenterItem
+        return delegate?.angleRotationOfCenterItem(in: self) ?? DefaultAngleRotationOfCenterItem
     }
     
     private func scalingRatioOfCenterItem() -> CGFloat {
-        return delegate?.scalingRatioOfCenterItem(of: self) ?? DefaultScalingRatioOfCenterItem
+        return delegate?.scalingRatioOfCenterItem(in: self) ?? DefaultScalingRatioOfCenterItem
     }
     
     private func distanceRatioToCenterOfCenterItem() -> CGFloat {
-        return delegate?.distanceRatioToCenterOfCenterItem(of: self) ?? DefaultDistanceRatioToCenterOfCenterItem
+        return delegate?.distanceRatioToCenterOfCenterItem(in: self) ?? DefaultDistanceRatioToCenterOfCenterItem
     }
     
     private func distanceToCenterOfCenterItem() -> CGFloat {
@@ -544,7 +546,7 @@ extension HJCardView {
     }
     
     private func numberOfItemsInCardView() -> Int {
-        return dataSource?.numberOfItemsInCardView() ?? 0
+        return dataSource?.numberOfItems(in: self) ?? 0
     }
 }
 
