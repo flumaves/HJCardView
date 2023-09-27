@@ -3,7 +3,11 @@ import UIKit
 /// HJCardView
 public class HJCardView: UIView {
     
-    public var delegate: HJCardViewDelegate?
+    public var delegate: HJCardViewDelegate? {
+        didSet {
+            visiableItems.numberOfItemsInSingleDirection = numberOfItemsInSingleDirection()
+        }
+    }
     
     public var dataSource: HJCardViewDataSource?
     
@@ -305,7 +309,7 @@ extension HJCardView {
         
         var numberOfItemsInSingleDirection: Int
 
-        init(numberOfItemsInSingleDirection: Int = 0) {
+        init(numberOfItemsInSingleDirection: Int = DefaultNumberOfItemsInSingleDirection) {
             self.numberOfItemsInSingleDirection = numberOfItemsInSingleDirection
             
             self.headSentinel.nextNode = tailSentinel
