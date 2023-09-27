@@ -3,9 +3,9 @@ import UIKit
 /// HJCardView
 public class HJCardView: UIView {
     
-    var delegate: HJCardViewDelegate?
+    public var delegate: HJCardViewDelegate?
     
-    var dataSource: HJCardViewDataSource?
+    public var dataSource: HJCardViewDataSource?
     
     private var panAction: UIPanGestureRecognizer?
     
