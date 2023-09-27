@@ -31,7 +31,9 @@ public class HJCardView: UIView {
         guard let dataSource = self.dataSource else { return }
         
         for index in 0..<numberOfItemsInSingleDirection() {
-            let item = dataSource.cardView(self, itemForIndex: index)
+            let item = dataSource.cardView(self, itemAtIndex: index)
+            item.bounds.size = itemSize(at: index)
+            item.frame.origin.y = self.bounds.origin.y
             
             self.sendSubviewToBack(item)
             self.addSubview(item)
@@ -194,7 +196,7 @@ extension HJCardView {
                     let newItemIndex = farRightItemIndex + 1
                     
                     if let dataSource = self.dataSource {
-                        let newItem = dataSource.cardView(self, itemForIndex: newItemIndex)
+                        let newItem = dataSource.cardView(self, itemAtIndex: newItemIndex)
                         let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
                         
                         let farRightItem = self.visiableItems.farRightItem()!.item
@@ -227,7 +229,7 @@ extension HJCardView {
                     let newItemIndex = farLeftItemIndex - 1
                     
                     if let dataSource = self.dataSource {
-                        let newItem = dataSource.cardView(self, itemForIndex: newItemIndex)
+                        let newItem = dataSource.cardView(self, itemAtIndex: newItemIndex)
                         let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
                         
                         let farLeftItem = self.visiableItems.farLeftItem()!.item
@@ -475,6 +477,15 @@ extension HJCardView {
 
 extension HJCardView {
 
+    private func itemSize(at index: Int) -> CGSize {
+        if let delegate = delegate, delegate.cardView(self, itemSizeAt: index) != CGSize.zero {
+            return delegate.cardView(self, itemSizeAt: index)
+        }
+        
+        let itemH = self.frame.height * 0.8, itemW = itemH * 3 / 4
+        return CGSize(width: itemW, height: itemH)
+    }
+    
     private func numberOfItemsInSingleDirection() -> Int {
         return delegate?.numberOfItemsInSingleDirection() ?? DefaultNumberOfItemsInSingleDirection
     }

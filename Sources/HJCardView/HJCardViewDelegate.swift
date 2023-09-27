@@ -4,6 +4,8 @@ public protocol HJCardViewDelegate: AnyObject {
     
     //func cardView(_ cardView: HJCardView, didSelectedItemAtIndex: Int)
     
+    func cardView(_ cardView: HJCardView, itemSizeAt index: Int) -> CGSize
+    
 // setting for edge items
     
     /**
@@ -65,7 +67,6 @@ public protocol HJCardViewDelegate: AnyObject {
      * the default value is 1.0
      */
     func distanceRatioToCenterOfCenterItem() -> CGFloat
-    
 }
 
 let DefaultNumberOfItemsInSingleDirection: Int        = 5
@@ -78,6 +79,10 @@ let DefaultDistanceRatioToCenterOfCenterItem: CGFloat = 1.0
 
 
 extension HJCardViewDelegate {
+    
+    public func cardView(_ cardView: HJCardView, itemSizeAt index: Int) -> CGSize {
+        return CGSize.zero
+    }
     
     public func numberOfItemsInSingleDirection() -> Int {
         return DefaultNumberOfItemsInSingleDirection
