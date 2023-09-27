@@ -5,7 +5,8 @@ public class HJCardView: UIView {
     
     public var delegate: HJCardViewDelegate? {
         didSet {
-            visiableItems.numberOfItemsInSingleDirection = numberOfItemsInSingleDirection()
+            visiableItems.numberOfItemsInHeadDirection = numberOfItemsInHeadDirection()
+            visiableItems.numberOfItemsInTailDirection = numberOfItemsInTailDirection()
         }
     }
     
@@ -36,7 +37,7 @@ public class HJCardView: UIView {
         
         guard let dataSource = self.dataSource else { return }
         
-        for index in 0..<numberOfItemsInSingleDirection() {
+        for index in 0..<numberOfItemsInBothDirection() {
             let item = dataSource.cardView(self, itemAt: index)
             item.bounds.size = itemSize()
             item.frame.origin.y = self.bounds.origin.y
@@ -45,7 +46,7 @@ public class HJCardView: UIView {
             self.addSubview(item)
             
             let itemWithIndex = ItemWithIndex(item: item, index: index)
-            self.visiableItems.addItemToRight(itemWithIndex)
+            self.visiableItems.addItemToTail(itemWithIndex)
         }
         
         setItemsDistanceToCenter()
@@ -57,9 +58,9 @@ extension HJCardView {
     // set items distance to center
     private func setItemsDistanceToCenter() {
         
-        let spaceBetweenItem = distanceToCenterOfEdgeItem() / CGFloat((numberOfItemsInSingleDirection() - 1))
+        let spaceBetweenItem = distanceToCenterOfEdgeItem() / CGFloat((numberOfItemsInBothDirection() - 1))
 
-        let rightItems = self.visiableItems.itemsFromCenterToRight()
+        let rightItems = self.visiableItems.itemsFromCenterToTail()
         
         for index in 0..<rightItems.count {
             let distance = CGFloat(index) * spaceBetweenItem
@@ -67,7 +68,7 @@ extension HJCardView {
             setItem(item, distanceToCenter: distance)
         }
 
-        let leftItems = self.visiableItems.itemsFromCenterToLeft()
+        let leftItems = self.visiableItems.itemsFromCenterToHead()
         
         for index in 0..<leftItems.count {
             let distance = CGFloat(index * -1) * spaceBetweenItem
@@ -174,7 +175,7 @@ extension HJCardView {
             // calculate the length that remaining items should move based on the proportion of the distance moved by the center item to the maximum moving distance of the center item
             let maxDistanceCenterItemMove = distanceToCenterOfCenterItem()
             let distanceRatioCenterItem = panOffSet.x / maxDistanceCenterItemMove / 1.5
-            let distanceOtherItemMove = distanceToCenterOfEdgeItem() / CGFloat(numberOfItemsInSingleDirection() - 1) * distanceRatioCenterItem
+            let distanceOtherItemMove = distanceToCenterOfEdgeItem() / CGFloat(numberOfItemsInBothDirection() - 1) * distanceRatioCenterItem
             
             for item in otherItems {
                 let distance = item.center.x + distanceOtherItemMove - center
@@ -202,7 +203,7 @@ extension HJCardView {
                     }
                 }
                 
-                if let farRightItemIndex = self.visiableItems.farRightItem()?.index, farRightItemIndex + 1 < numberOfItemsInCardView() {
+                if let farRightItemIndex = self.visiableItems.tailItem()?.index, farRightItemIndex + 1 < numberOfItemsInCardView() {
                     
                     let newItemIndex = farRightItemIndex + 1
                     
@@ -211,7 +212,7 @@ extension HJCardView {
                         newItem.frame.size = itemSize()
                         let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
                         
-                        let farRightItem = self.visiableItems.farRightItem()!.item
+                        let farRightItem = self.visiableItems.tailItem()!.item
                         let distance = farRightItem.center.x
                         
                         setNewItem(newItem, distanceToCenter: 30)
@@ -224,7 +225,7 @@ extension HJCardView {
                             self.setItemsDistanceToCenter()
                         }
                         
-                        self.visiableItems.addItemToRight(newItemWithIndex)
+                        self.visiableItems.addItemToTail(newItemWithIndex)
                     }
                 }
             
@@ -236,7 +237,7 @@ extension HJCardView {
                     }
                 }
                 
-                if let farLeftItemIndex = self.visiableItems.farLeftItem()?.index, farLeftItemIndex - 1 >= 0 {
+                if let farLeftItemIndex = self.visiableItems.headItem()?.index, farLeftItemIndex - 1 >= 0 {
                     
                     let newItemIndex = farLeftItemIndex - 1
                     
@@ -245,7 +246,7 @@ extension HJCardView {
                         newItem.frame.size = itemSize()
                         let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
                         
-                        let farLeftItem = self.visiableItems.farLeftItem()!.item
+                        let farLeftItem = self.visiableItems.headItem()!.item
                         let distance = farLeftItem.center.x
                         
                         setNewItem(newItem, distanceToCenter: -30)
@@ -258,7 +259,7 @@ extension HJCardView {
                             self.setItemsDistanceToCenter()
                         }
                         
-                        self.visiableItems.addItemToLeft(newItemWithIndex)
+                        self.visiableItems.addItemToHead(newItemWithIndex)
                     }
                 }
             }
@@ -310,10 +311,12 @@ extension HJCardView {
         private let tailSentinel: Node = Node()
         private var centerNode: Node?
         
-        var numberOfItemsInSingleDirection: Int
+        var numberOfItemsInHeadDirection: Int
+        var numberOfItemsInTailDirection: Int
 
-        init(numberOfItemsInSingleDirection: Int = DefaultNumberOfItemsInSingleDirection) {
-            self.numberOfItemsInSingleDirection = numberOfItemsInSingleDirection
+        init(numberOfItemsInHeadDirection: Int = DefaultNumberOfItemsInBothDirection, numberOfItemsInTailDirection: Int = DefaultNumberOfItemsInBothDirection) {
+            self.numberOfItemsInHeadDirection = numberOfItemsInHeadDirection
+            self.numberOfItemsInTailDirection = numberOfItemsInTailDirection
             
             self.headSentinel.nextNode = tailSentinel
             self.tailSentinel.preNode = headSentinel
@@ -332,8 +335,8 @@ extension HJCardView {
             return count
         }
         
-        // add item to the left/right of card view
-        func addItemToLeft(_ item: ItemWithIndex) {
+        // add item to the head/tail of card view
+        func addItemToHead(_ item: ItemWithIndex) {
             let node = Node(itemWithIndex: item)
             
             let nextNode = self.headSentinel.nextNode
@@ -348,7 +351,7 @@ extension HJCardView {
             }
         }
 
-        func addItemToRight(_ item: ItemWithIndex) {
+        func addItemToTail(_ item: ItemWithIndex) {
             let node = Node(itemWithIndex: item)
             
             let preNode = self.tailSentinel.preNode
@@ -363,8 +366,8 @@ extension HJCardView {
             }
         }
         
-        // delete left/right item in card view and return the item
-        func deleteFarLeftItem() -> HJCardViewItem? {
+        // delete head/tail item in card view and return the item
+        func deleteHeadItem() -> HJCardViewItem? {
             guard centerNode != nil else { return nil }
             
             let deleteNode = self.headSentinel.nextNode
@@ -376,7 +379,7 @@ extension HJCardView {
             return deleteNode?.itemWithIndex?.item
         }
         
-        func deleteFarRightItem() -> HJCardViewItem? {
+        func deleteTailItem() -> HJCardViewItem? {
             guard centerNode != nil else { return nil }
             
             let deleteNode = self.tailSentinel.preNode
@@ -389,16 +392,16 @@ extension HJCardView {
         }
         
         /*
-         * all items move one step to the left/right
-         * if the number of items on left/right exceeds numberOfItemsInSingleDirection, the left/right most item will be deleted and returned
+         * all items move one step to the head/tail
+         * if the number of items on head/tail exceeds number of items corresponding to the direction, the most head/tail item will be deleted and returned
          */
         func allItemsMoveLeft() -> HJCardViewItem? {
             guard let newCenterNode = self.centerNode?.nextNode else { return nil }
             
             self.centerNode = newCenterNode
             
-            if itemsFromCenterToLeft().count > numberOfItemsInSingleDirection {
-                return deleteFarLeftItem()
+            if itemsFromCenterToHead().count > numberOfItemsInHeadDirection {
+                return deleteHeadItem()
             }
             
             return nil
@@ -409,15 +412,15 @@ extension HJCardView {
             
             self.centerNode = newCenterNode
             
-            if itemsFromCenterToRight().count > numberOfItemsInSingleDirection {
-                return deleteFarRightItem()
+            if itemsFromCenterToTail().count > numberOfItemsInTailDirection {
+                return deleteTailItem()
             }
             
             return nil
         }
         
-        // return all items to the left/right including the center item
-        func itemsFromCenterToLeft() -> [HJCardViewItem] {
+        // return all items to the head/tail including the center item
+        func itemsFromCenterToHead() -> [HJCardViewItem] {
             var items: [HJCardViewItem] = []
             
             var curNode = centerNode
@@ -430,7 +433,7 @@ extension HJCardView {
             return items
         }
 
-        func itemsFromCenterToRight() -> [HJCardViewItem] {
+        func itemsFromCenterToTail() -> [HJCardViewItem] {
             var items: [HJCardViewItem] = []
             
             var curNode = centerNode
@@ -465,24 +468,24 @@ extension HJCardView {
             
         }
         
-        // return the first item to the left/right of the center item
-        func centerLeftItem() -> ItemWithIndex? {
+        // return the item closest to the center item at the head/tail
+        func centerHeadItem() -> ItemWithIndex? {
             return self.centerNode?.preNode?.itemWithIndex
         }
 
-        func centerRightItem() -> ItemWithIndex? {
+        func centerTailItem() -> ItemWithIndex? {
             return self.centerNode?.nextNode?.itemWithIndex
         }
         
         /*
-         * return the left/right most item
+         * return the most head/tail item
          * return item with index because it would be used in code
          */
-        func farRightItem() -> ItemWithIndex? {
+        func headItem() -> ItemWithIndex? {
             return self.tailSentinel.preNode?.itemWithIndex
         }
         
-        func farLeftItem() -> ItemWithIndex? {
+        func tailItem() -> ItemWithIndex? {
             return self.headSentinel.nextNode?.itemWithIndex
         }
     }
@@ -499,16 +502,24 @@ extension HJCardView {
         return CGSize(width: itemW, height: itemH)
     }
     
-    private func centerItemSize() -> CGSize {
-        if let delegate = delegate, delegate.centerItemSize(in: self) != CGSize.zero {
-            return delegate.centerItemSize(in: self)
-        }
-        
-        return itemSize()
+//    private func centerItemSize() -> CGSize {
+//        if let delegate = delegate, delegate.centerItemSize(in: self) != CGSize.zero {
+//            return delegate.centerItemSize(in: self)
+//        }
+//        
+//        return itemSize()
+//    }
+    
+    private func numberOfItemsInHeadDirection() -> Int {
+        return delegate?.numberOfItemsInHeadDirection(in: self) ?? DefaultNumberOfItemsInBothDirection
     }
     
-    private func numberOfItemsInSingleDirection() -> Int {
-        return delegate?.numberOfItemsInSingleDirection(in: self) ?? DefaultNumberOfItemsInSingleDirection
+    private func numberOfItemsInTailDirection() -> Int {
+        return delegate?.numberOfItemsInTailDirection(in: self) ?? DefaultNumberOfItemsInBothDirection
+    }
+    
+    private func numberOfItemsInBothDirection() -> Int {
+        return delegate?.numberOfItemsInBothDirection(in: self) ?? DefaultNumberOfItemsInBothDirection
     }
     
     private func angleRotationOfEdgeItem() -> CGFloat {

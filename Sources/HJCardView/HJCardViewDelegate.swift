@@ -12,10 +12,18 @@ public protocol HJCardViewDelegate: AnyObject {
      *
      * when the method 'centerItemSize(of:)' isn't implemented, the size of the center item is equal to the item size
      */
-    func centerItemSize(in cardView: HJCardView) -> CGSize
+//    func centerItemSize(in cardView: HJCardView) -> CGSize
     
     
 // setting for edge items
+    
+    /**
+     * Because items can be placed horizontally and vertically, there is no need to define top, bottom, left or right. Instead, the head represents the left/top, and the tail represents the right/bottom.
+     *
+     * If there is no implementation of these two methods, the 'numberOfItemsInBothDirection(in:)' will be returned by default
+     */
+    func numberOfItemsInHeadDirection(in cardView: HJCardView) -> Int
+    func numberOfItemsInTailDirection(in cardView: HJCardView) -> Int
     
     /**
      * how many items can be displayed in one direction
@@ -25,7 +33,7 @@ public protocol HJCardViewDelegate: AnyObject {
      *
      * the default value is 5
      */
-    func numberOfItemsInSingleDirection(in cardView: HJCardView) -> Int
+    func numberOfItemsInBothDirection(in cardView: HJCardView) -> Int
     
     /**
      * the rotation angle of the item located at the edge,
@@ -78,7 +86,7 @@ public protocol HJCardViewDelegate: AnyObject {
     func distanceRatioToCenterOfCenterItem(in cardView: HJCardView) -> CGFloat
 }
 
-let DefaultNumberOfItemsInSingleDirection: Int        = 5
+let DefaultNumberOfItemsInBothDirection: Int          = 5
 let DefaultAngleRotationOfEdgeItem: CGFloat           = .pi/9
 let DefaultScalingRatioOfEdgeItem: CGFloat            = 0.8
 let DefaultDistanceRatioToCenterOfEdgeItem: CGFloat   = 0.8
@@ -93,12 +101,20 @@ extension HJCardViewDelegate {
         return CGSize.zero
     }
     
-    public func centerItemSize(in cardView: HJCardView) -> CGSize {
-        return itemSize(in: cardView)
+//    public func centerItemSize(in cardView: HJCardView) -> CGSize {
+//        return itemSize(in: cardView)
+//    }
+    
+    public func numberOfItemsInHeadDirection(in cardView: HJCardView) -> Int {
+        return numberOfItemsInBothDirection(in: cardView)
     }
     
-    public func numberOfItemsInSingleDirection(in cardView: HJCardView) -> Int {
-        return DefaultNumberOfItemsInSingleDirection
+    public func numberOfItemsInTailDirection(in cardView: HJCardView) -> Int {
+        return numberOfItemsInBothDirection(in: cardView)
+    }
+    
+    public func numberOfItemsInBothDirection(in cardView: HJCardView) -> Int {
+        return DefaultNumberOfItemsInBothDirection
     }
     
     public func angleRotationOfEdgeItem(in cardView: HJCardView) -> CGFloat {
