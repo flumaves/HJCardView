@@ -40,7 +40,13 @@ public class HJCardView: UIView {
         for index in 0..<numberOfItemsInBothDirection() {
             let item = dataSource.cardView(self, itemAt: index)
             item.bounds.size = itemSize()
-            item.frame.origin.y = self.bounds.origin.y
+            
+            switch placementDirection {
+            case .horizontal:
+                item.frame.origin.y = self.bounds.origin.y
+            case .vertical:
+                item.frame.origin.x = self.bounds.origin.x
+            }
             
             self.sendSubviewToBack(item)
             self.addSubview(item)
@@ -90,8 +96,14 @@ extension HJCardView {
         let maxRotateAngle = angleRotationOfEdgeItem()
         
         // position
-        item.center.x = centerX + distance
-        item.center.y = centerY
+        switch placementDirection {
+        case .horizontal:
+            item.center.x = centerX + distance
+            item.center.y = centerY
+        case .vertical:
+            item.center.x = centerX
+            item.center.y = centerY + distance
+        }
         
         // scale
         let scaleRatio = minScaleRatio + (1 - abs(distance) / maxDistanceToCenter) * (1 - minScaleRatio)
@@ -118,8 +130,14 @@ extension HJCardView {
         let maxRotateAngle = angleRotationOfCenterItem()
         
         // position
-        item.center.x = centerX + distance
-        item.center.y = centerY
+        switch placementDirection {
+        case .horizontal:
+            item.center.x = centerX + distance
+            item.center.y = centerY
+        case .vertical:
+            item.center.x = centerX
+            item.center.y = centerY + distance
+        }
         
         // scale
         let scaleRatio = minScaleRatio + (1 - abs(distance) / maxDistanceToCenter) * (1 - minScaleRatio)
@@ -146,8 +164,14 @@ extension HJCardView {
         let maxRotateAngle = angleRotationOfEdgeItem()
         
         // position
-        item.center.x = centerX + distance
-        item.center.y = centerY
+        switch placementDirection {
+        case .horizontal:
+            item.center.x = centerX + distance
+            item.center.y = centerY
+        case .vertical:
+            item.center.x = centerX
+            item.center.y = centerY + distance
+        }
         
         // scale
         let scaleRatio = minScaleRatio + (1 - abs(distance) / maxDistanceToCenter) * (1 - minScaleRatio)
@@ -167,24 +191,27 @@ extension HJCardView {
     @objc private func panItem(_ sender: UIPanGestureRecognizer) {
         
         let panOffSet = sender.translation(in: self)
-        let center = self.bounds.width / 2
+        let center = placementDirection == .horizontal ? self.bounds.width / 2 : self.bounds.height / 2
         
         if sender.state == .changed {
             let otherItems = self.visiableItems.itemsExceptCenterItem()
             
             // calculate the length that remaining items should move based on the proportion of the distance moved by the center item to the maximum moving distance of the center item
+            let panOffSet = placementDirection == .horizontal ? panOffSet.x : panOffSet.y
             let maxDistanceCenterItemMove = distanceToCenterOfCenterItem()
-            let distanceRatioCenterItem = panOffSet.x / maxDistanceCenterItemMove / 1.5
+            let distanceRatioCenterItem = panOffSet / maxDistanceCenterItemMove / 1.5
             let distanceOtherItemMove = distanceToCenterOfEdgeItem() / CGFloat(numberOfItemsInBothDirection() - 1) * distanceRatioCenterItem
             
             for item in otherItems {
-                let distance = item.center.x + distanceOtherItemMove - center
+                let itemCenter = placementDirection == .horizontal ? item.center.x : item.center.y
+                let distance = itemCenter + distanceOtherItemMove - center
                 setItem(item, distanceToCenter: distance)
             }
 
-            if let centerItem = self.visiableItems.centerItem() {
-                let distance = centerItem.item.center.x - center + panOffSet.x
-                setCenterItem(centerItem.item, distanceToCenter: distance)
+            if let centerItem = self.visiableItems.centerItem()?.item {
+                let centerItemCenter = placementDirection == .horizontal ? centerItem.center.x : centerItem.center.y
+                let distance = centerItemCenter - center + panOffSet
+                setCenterItem(centerItem, distanceToCenter: distance)
             }
             
             sender.setTranslation(CGPoint.zero, in: self)
@@ -192,8 +219,9 @@ extension HJCardView {
         } else if sender.state == .ended {
             
             // determine whether to update or restore based on the proportion of center item movement
-            guard let centerItem = self.visiableItems.centerItem() else { return }
-            let ratio = (centerItem.item.center.x - center) / distanceToCenterOfCenterItem()
+            guard let centerItem = self.visiableItems.centerItem()?.item else { return }
+            let centerItemCenter = placementDirection == .horizontal ? centerItem.center.x : centerItem.center.y
+            let ratio = (centerItemCenter - center) / distanceToCenterOfCenterItem()
             
             // move one step to the left
             if ratio <= -0.9 {
