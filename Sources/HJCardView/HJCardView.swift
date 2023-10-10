@@ -59,9 +59,9 @@ public class HJCardView: UIView {
     }
 }
 
+// set positions of items on the card view
 extension HJCardView {
     
-    // set items distance to center
     private func setItemsDistanceToCenter() {
         
         let spaceBetweenItem = distanceToCenterOfEdgeItem() / CGFloat((numberOfItemsInBothDirection() - 1))
@@ -117,7 +117,10 @@ extension HJCardView {
         item.transform = scaleMatrix.concatenating(rotateMatrix)
         
         // zPosition
-        item.layer.zPosition = -abs(distance)
+        if item.status == .edgeItem {
+            item.layer.zPosition = -abs(distance)
+            item.status = .edgeItem
+        }
     }
 
     private func setCenterItem(_ item: HJCardViewItem, distanceToCenter distance: CGFloat) {
@@ -153,39 +156,9 @@ extension HJCardView {
         // zPosition
         //        item.layer.zPosition = -abs(distance)
     }
-    
-    private func setNewItem(_ item: HJCardViewItem, distanceToCenter distance: CGFloat) {
-        
-        let centerX = self.bounds.size.width / 2
-        let centerY = self.bounds.size.height / 2
-        
-        let maxDistanceToCenter = distanceToCenterOfEdgeItem()
-        let minScaleRatio = scalingRatioOfEdgeItem()
-        let maxRotateAngle = angleRotationOfEdgeItem()
-        
-        // position
-        switch placementDirection {
-        case .horizontal:
-            item.center.x = centerX + distance
-            item.center.y = centerY
-        case .vertical:
-            item.center.x = centerX
-            item.center.y = centerY + distance
-        }
-        
-        // scale
-        let scaleRatio = minScaleRatio + (1 - abs(distance) / maxDistanceToCenter) * (1 - minScaleRatio)
-        let scaleMatrix = CGAffineTransform(scaleX: scaleRatio, y: scaleRatio)
-        
-        // rotate
-        let rotateRatio = distance / maxDistanceToCenter
-        let rotateAngle = maxRotateAngle * rotateRatio
-        let rotateMatrix = CGAffineTransform(rotationAngle: rotateAngle)
-        
-        item.transform = scaleMatrix.concatenating(rotateMatrix)
-    }
 }
 
+// gestures on card view
 extension HJCardView {
 
     @objc private func panItem(_ sender: UIPanGestureRecognizer) {
@@ -237,19 +210,20 @@ extension HJCardView {
                     
                     if let dataSource = self.dataSource {
                         let newItem = dataSource.cardView(self, itemAt: newItemIndex)
+                        newItem.status = .newItem
                         newItem.frame.size = itemSize()
                         let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
                         
                         let farRightItem = self.visiableItems.tailItem()!.item
                         let distance = farRightItem.center.x
                         
-                        setNewItem(newItem, distanceToCenter: 30)
+                        setItem(newItem, distanceToCenter: 30)
                         newItem.layer.zPosition = -1000
                         newItem.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
                         self.addSubview(newItem)
                         
                         UIView.animate(withDuration: 0.25) {
-                            self.setNewItem(newItem, distanceToCenter: distance)
+                            self.setItem(newItem, distanceToCenter: distance)
                             self.setItemsDistanceToCenter()
                         }
                         
@@ -277,13 +251,13 @@ extension HJCardView {
                         let farLeftItem = self.visiableItems.headItem()!.item
                         let distance = farLeftItem.center.x
                         
-                        setNewItem(newItem, distanceToCenter: -30)
+                        setItem(newItem, distanceToCenter: -30)
                         newItem.layer.zPosition = -1000
                         newItem.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
                         self.addSubview(newItem)
                         
                         UIView.animate(withDuration: 0.25) {
-                            self.setNewItem(newItem, distanceToCenter: distance)
+                            self.setItem(newItem, distanceToCenter: distance)
                             self.setItemsDistanceToCenter()
                         }
                         
@@ -596,21 +570,4 @@ extension HJCardView {
         case vertical
     }
     
-}
-
-public class HJCardViewItem: UIView {
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        
-        self.layer.cornerRadius = 15.0
-        self.backgroundColor = .systemGray
-        self.layer.borderColor = UIColor.black.cgColor
-        self.layer.borderWidth = 2.0
-        self.clipsToBounds = true
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
 }
