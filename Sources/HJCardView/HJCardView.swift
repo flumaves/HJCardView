@@ -17,7 +17,7 @@ public class HJCardView: UIView {
     private var panAction: UIPanGestureRecognizer?
     
     /// items shows on the screen
-    private var visiableItems = Items()
+    private var visiableItems: HJCardView.Items = Items()
     
     public override init(frame: CGRect) {
         super.init(frame: frame)
@@ -59,10 +59,13 @@ public class HJCardView: UIView {
     }
 }
 
+
 // set positions of items on the card view
 extension HJCardView {
     
     private func setItemsDistanceToCenter() {
+        
+        updateItemsStatus()
         
         let spaceBetweenItem = distanceToCenterOfEdgeItem() / CGFloat((numberOfItemsInBothDirection() - 1))
 
@@ -91,9 +94,9 @@ extension HJCardView {
         let centerX = self.bounds.size.width / 2
         let centerY = self.bounds.size.height / 2
         
-        let maxDistanceToCenter = distanceToCenterOfEdgeItem()
-        let minScaleRatio = scalingRatioOfEdgeItem()
-        let maxRotateAngle = angleRotationOfEdgeItem()
+        let maxDistanceToCenter = item.status == .centerItem ? distanceToCenterOfCenterItem() : distanceToCenterOfEdgeItem()
+        let minScaleRatio = item.status == .centerItem ? scalingRatioOfCenterItem() : scalingRatioOfEdgeItem()
+        let maxRotateAngle = item.status == .centerItem ? angleRotationOfCenterItem() : angleRotationOfEdgeItem()
         
         // position
         switch placementDirection {
@@ -119,44 +122,10 @@ extension HJCardView {
         // zPosition
         if item.status == .edgeItem {
             item.layer.zPosition = -abs(distance)
-            item.status = .edgeItem
         }
-    }
-
-    private func setCenterItem(_ item: HJCardViewItem, distanceToCenter distance: CGFloat) {
-        
-        let centerX = self.bounds.size.width / 2
-        let centerY = self.bounds.size.height / 2
-        
-        let maxDistanceToCenter = distanceToCenterOfCenterItem()
-        let minScaleRatio = scalingRatioOfCenterItem()
-        let maxRotateAngle = angleRotationOfCenterItem()
-        
-        // position
-        switch placementDirection {
-        case .horizontal:
-            item.center.x = centerX + distance
-            item.center.y = centerY
-        case .vertical:
-            item.center.x = centerX
-            item.center.y = centerY + distance
-        }
-        
-        // scale
-        let scaleRatio = minScaleRatio + (1 - abs(distance) / maxDistanceToCenter) * (1 - minScaleRatio)
-        let scaleMatrix = CGAffineTransform(scaleX: scaleRatio, y: scaleRatio)
-        
-        // rotate
-        let rotateRatio = distance / maxDistanceToCenter
-        let rotateAngle = maxRotateAngle * rotateRatio
-        let rotateMatrix = CGAffineTransform(rotationAngle: rotateAngle)
-        
-        item.transform = scaleMatrix.concatenating(rotateMatrix)
-        
-        // zPosition
-        //        item.layer.zPosition = -abs(distance)
     }
 }
+
 
 // gestures on card view
 extension HJCardView {
@@ -167,24 +136,16 @@ extension HJCardView {
         let center = placementDirection == .horizontal ? self.bounds.width / 2 : self.bounds.height / 2
         
         if sender.state == .changed {
-            let otherItems = self.visiableItems.itemsExceptCenterItem()
-            
             // calculate the length that remaining items should move based on the proportion of the distance moved by the center item to the maximum moving distance of the center item
             let panOffSet = placementDirection == .horizontal ? panOffSet.x : panOffSet.y
             let maxDistanceCenterItemMove = distanceToCenterOfCenterItem()
             let distanceRatioCenterItem = panOffSet / maxDistanceCenterItemMove / 1.5
             let distanceOtherItemMove = distanceToCenterOfEdgeItem() / CGFloat(numberOfItemsInBothDirection() - 1) * distanceRatioCenterItem
             
-            for item in otherItems {
+            for item in self.visiableItems {
                 let itemCenter = placementDirection == .horizontal ? item.center.x : item.center.y
-                let distance = itemCenter + distanceOtherItemMove - center
+                let distance = item.status == .centerItem ? itemCenter - center + panOffSet : itemCenter - center + distanceOtherItemMove
                 setItem(item, distanceToCenter: distance)
-            }
-
-            if let centerItem = self.visiableItems.centerItem()?.item {
-                let centerItemCenter = placementDirection == .horizontal ? centerItem.center.x : centerItem.center.y
-                let distance = centerItemCenter - center + panOffSet
-                setCenterItem(centerItem, distanceToCenter: distance)
             }
             
             sender.setTranslation(CGPoint.zero, in: self)
@@ -245,6 +206,7 @@ extension HJCardView {
                     
                     if let dataSource = self.dataSource {
                         let newItem = dataSource.cardView(self, itemAt: newItemIndex)
+                        newItem.status = .newItem
                         newItem.frame.size = itemSize()
                         let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
                         
@@ -273,6 +235,7 @@ extension HJCardView {
     }
     
 }
+
 
 // data structrue of card view
 extension HJCardView {
@@ -307,7 +270,7 @@ extension HJCardView {
      * this is a double linked list with two sentinel
      * centerNode point to the center item with index which showing on the screen, if dont have items it would be nil
      */
-    private class Items {
+    private class Items: Sequence {
         
         private let headSentinel: Node = Node()
         private let tailSentinel: Node = Node()
@@ -490,8 +453,18 @@ extension HJCardView {
         func tailItem() -> ItemWithIndex? {
             return self.headSentinel.nextNode?.itemWithIndex
         }
+        
+        func makeIterator() -> AnyIterator<HJCardViewItem> {
+            var curNode = headSentinel.nextNode
+            
+            return AnyIterator {
+                defer { curNode = curNode?.nextNode }
+                return curNode?.itemWithIndex?.item
+            }
+        }
     }
 }
+
 
 extension HJCardView {
 
@@ -563,6 +536,28 @@ extension HJCardView {
     }
 }
 
+
+// update items status
+extension HJCardView {
+    
+    private func updateItemsStatus() {
+        
+        guard let centerItem = visiableItems.centerItem()?.item else {
+            return
+        }
+        
+        for item in self.visiableItems {
+            if item == centerItem {
+                item.status = .centerItem
+            } else {
+                item.status = .edgeItem
+            }
+        }
+    }
+}
+
+
+// card view config
 extension HJCardView {
     
     public enum PlacementDirection {
