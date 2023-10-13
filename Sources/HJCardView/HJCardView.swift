@@ -19,6 +19,9 @@ public class HJCardView: UIView {
     /// items shows on the screen
     private var visiableItems: HJCardView.Items = Items()
     
+    // save the ratio of items movement each time drag it
+    private var itemsRatioHaveMoved: CGFloat = 0
+    
     public override init(frame: CGRect) {
         super.init(frame: frame)
         
@@ -55,7 +58,7 @@ public class HJCardView: UIView {
             self.visiableItems.addItemToTail(itemWithIndex)
         }
         
-        setItemsDistanceToCenter()
+        setItemsDefaultDistanceToCenter()
     }
 }
 
@@ -63,7 +66,7 @@ public class HJCardView: UIView {
 // set positions of items on the card view
 extension HJCardView {
     
-    private func setItemsDistanceToCenter() {
+    private func setItemsDefaultDistanceToCenter() {
         
         updateItemsStatus()
         
@@ -122,6 +125,10 @@ extension HJCardView {
         // zPosition
         if item.status == .edgeItem {
             item.layer.zPosition = -abs(distance)
+        } else if item.status == .centerItem {
+            let spaceBetweenItem = distanceToCenterOfEdgeItem() / CGFloat((numberOfItemsInBothDirection() - 1))
+            
+            item.layer.zPosition = -abs(distance) < -spaceBetweenItem ? -spaceBetweenItem : -abs(distance)
         }
     }
 }
@@ -139,8 +146,11 @@ extension HJCardView {
             // calculate the length that remaining items should move based on the proportion of the distance moved by the center item to the maximum moving distance of the center item
             let panOffSet = placementDirection == .horizontal ? panOffSet.x : panOffSet.y
             let maxDistanceCenterItemMove = distanceToCenterOfCenterItem()
-            let distanceRatioCenterItem = panOffSet / maxDistanceCenterItemMove / 1.5
-            let distanceOtherItemMove = distanceToCenterOfEdgeItem() / CGFloat(numberOfItemsInBothDirection() - 1) * distanceRatioCenterItem
+            let distanceRatioCenterItem = panOffSet / maxDistanceCenterItemMove
+            var distanceOtherItemMove = distanceToCenterOfEdgeItem() / CGFloat(numberOfItemsInBothDirection() - 1) * distanceRatioCenterItem
+            
+            itemsRatioHaveMoved += distanceRatioCenterItem
+            distanceOtherItemMove = abs(itemsRatioHaveMoved) < 1 ? distanceOtherItemMove : 0
             
             for item in self.visiableItems {
                 let itemCenter = placementDirection == .horizontal ? item.center.x : item.center.y
@@ -151,6 +161,8 @@ extension HJCardView {
             sender.setTranslation(CGPoint.zero, in: self)
             
         } else if sender.state == .ended {
+            
+            itemsRatioHaveMoved = 0
             
             // determine whether to update or restore based on the proportion of center item movement
             guard let centerItem = self.visiableItems.centerItem()?.item else { return }
@@ -185,7 +197,7 @@ extension HJCardView {
                         
                         UIView.animate(withDuration: 0.25) {
                             self.setItem(newItem, distanceToCenter: distance)
-                            self.setItemsDistanceToCenter()
+                            self.setItemsDefaultDistanceToCenter()
                         }
                         
                         self.visiableItems.addItemToTail(newItemWithIndex)
@@ -220,7 +232,7 @@ extension HJCardView {
                         
                         UIView.animate(withDuration: 0.25) {
                             self.setItem(newItem, distanceToCenter: distance)
-                            self.setItemsDistanceToCenter()
+                            self.setItemsDefaultDistanceToCenter()
                         }
                         
                         self.visiableItems.addItemToHead(newItemWithIndex)
@@ -229,7 +241,7 @@ extension HJCardView {
             }
             
             UIView.animate(withDuration: 0.25) {
-                self.setItemsDistanceToCenter()
+                self.setItemsDefaultDistanceToCenter()
             }
         }
     }
