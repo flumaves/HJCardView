@@ -446,11 +446,11 @@ extension HJCardView {
          * return the most head/tail item
          * return item with index because it would be used in code
          */
-        func headItem() -> ItemWithIndex? {
+        func tailItem() -> ItemWithIndex? {
             return self.tailSentinel.preNode?.itemWithIndex
         }
         
-        func tailItem() -> ItemWithIndex? {
+        func headItem() -> ItemWithIndex? {
             return self.headSentinel.nextNode?.itemWithIndex
         }
         
@@ -564,5 +564,4 @@ extension HJCardView {
         case horizontal
         case vertical
     }
-    
 }
