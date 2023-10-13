@@ -144,17 +144,25 @@ extension HJCardView {
         
         if sender.state == .changed {
             // calculate the length that remaining items should move based on the proportion of the distance moved by the center item to the maximum moving distance of the center item
-            let panOffSet = placementDirection == .horizontal ? panOffSet.x : panOffSet.y
+            var distanceCenterItemMove = placementDirection == .horizontal ? panOffSet.x : panOffSet.y
             let maxDistanceCenterItemMove = distanceToCenterOfCenterItem()
-            let distanceRatioCenterItem = panOffSet / maxDistanceCenterItemMove
+            let distanceRatioCenterItem = distanceCenterItemMove / maxDistanceCenterItemMove
             var distanceOtherItemMove = distanceToCenterOfEdgeItem() / CGFloat(numberOfItemsInBothDirection() - 1) * distanceRatioCenterItem
             
             itemsRatioHaveMoved += distanceRatioCenterItem
-            distanceOtherItemMove = abs(itemsRatioHaveMoved) < 1 ? distanceOtherItemMove : 0
+            // set to 0.8 to slow down the item when it is about to move the maxmimum distance
+            // distanceOtherItemMove = abs(itemsHaveMovedRatio) < 1 ? distanceOtherItemMove : 0
+            distanceOtherItemMove = abs(itemsRatioHaveMoved) < 0.8 ? distanceOtherItemMove : distanceOtherItemMove / 5
+            
+            // add constraint while center item is the most marginal item
+            if (itemsRatioHaveMoved > 0 && centerItemIsHeadItem()) || (itemsRatioHaveMoved < 0 && centerItemIsTailItem()) {
+                distanceCenterItemMove = distanceCenterItemMove / 10
+                distanceOtherItemMove = distanceOtherItemMove / 5
+            }
             
             for item in self.visiableItems {
                 let itemCenter = placementDirection == .horizontal ? item.center.x : item.center.y
-                let distance = item.status == .centerItem ? itemCenter - center + panOffSet : itemCenter - center + distanceOtherItemMove
+                let distance = item.status == .centerItem ? itemCenter - center + distanceCenterItemMove : itemCenter - center + distanceOtherItemMove
                 setItem(item, distanceToCenter: distance)
             }
             
@@ -549,11 +557,9 @@ extension HJCardView {
 }
 
 
-// update items status
 extension HJCardView {
     
     private func updateItemsStatus() {
-        
         guard let centerItem = visiableItems.centerItem()?.item else {
             return
         }
@@ -565,6 +571,15 @@ extension HJCardView {
                 item.status = .edgeItem
             }
         }
+    }
+    
+    // return whether the center item is the head/tail item in data source
+    private func centerItemIsHeadItem() -> Bool {
+        return visiableItems.centerItem()?.index == 0
+    }
+    
+    private func centerItemIsTailItem() -> Bool {
+        return visiableItems.centerItem()?.index == numberOfItemsInCardView() - 1
     }
 }
 
