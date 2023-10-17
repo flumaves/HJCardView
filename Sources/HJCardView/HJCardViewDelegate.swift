@@ -2,7 +2,10 @@ import Foundation
 
 public protocol HJCardViewDelegate: AnyObject {
     
-    //func cardView(_ cardView: HJCardView, didSelectedItemAtIndex: Int)
+    //func cardView(_ cardView: HJCardView, didSelectedItemAtIndex: Int)\
+    
+    /// this method is called when the center item is called
+    func centerItemDidSelected(in cardView: HJCardView)
     
     /// the size of the item closest to the center item
     func itemSize(in cardView: HJCardView) -> CGSize

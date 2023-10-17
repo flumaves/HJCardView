@@ -44,6 +44,9 @@ public class HJCardView: UIView {
             let item = dataSource.cardView(self, itemAt: index)
             item.bounds.size = itemSize()
             
+            let pan = UIPanGestureRecognizer.init(target: self, action: #selector(panItem(_:)))
+            item.addGestureRecognizer(pan)
+            
             switch placementDirection {
             case .horizontal:
                 item.frame.origin.y = self.bounds.origin.y
@@ -136,6 +139,10 @@ extension HJCardView {
 
 // gestures on card view
 extension HJCardView {
+    
+    @objc private func clickCenterItem(_ sender: UITapGestureRecognizer) {
+        self.delegate?.centerItemDidSelected(in: self)
+    }
 
     @objc private func panItem(_ sender: UIPanGestureRecognizer) {
         
@@ -193,6 +200,10 @@ extension HJCardView {
                         let newItem = dataSource.cardView(self, itemAt: newItemIndex)
                         newItem.status = .newItem
                         newItem.frame.size = itemSize()
+                        
+                        let pan = UIPanGestureRecognizer.init(target: self, action: #selector(panItem(_:)))
+                        newItem.addGestureRecognizer(pan)
+                        
                         let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
                         
                         let farRightItem = self.visiableItems.tailItem()!.item
@@ -228,6 +239,10 @@ extension HJCardView {
                         let newItem = dataSource.cardView(self, itemAt: newItemIndex)
                         newItem.status = .newItem
                         newItem.frame.size = itemSize()
+                        
+                        let pan = UIPanGestureRecognizer.init(target: self, action: #selector(panItem(_:)))
+                        newItem.addGestureRecognizer(pan)
+                        
                         let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
                         
                         let farLeftItem = self.visiableItems.headItem()!.item
