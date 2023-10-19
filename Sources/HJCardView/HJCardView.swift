@@ -22,6 +22,9 @@ public class HJCardView: UIView {
     // save the ratio of items movement each time drag it
     private var itemsRatioHaveMoved: CGFloat = 0
     
+    // reuse pool, do not destoryed the item immediately when the item remove from the screen, but is put into the reuse pool. When a new item needed, it would be searched base on the reuseID
+    private var reusePool: HJReusePool = HJReusePool()
+    
     public override init(frame: CGRect) {
         super.init(frame: frame)
         
@@ -66,6 +69,15 @@ public class HJCardView: UIView {
 }
 
 
+// MARK: public methods
+extension HJCardView {
+    public func dequeueReusableItemWith(identifier reuseID: String) -> HJCardViewItem? {
+        return reusePool.itemWith(reuseID: reuseID)
+    }
+}
+
+
+// MARK: private methods
 // set positions of items on the card view
 extension HJCardView {
     
@@ -195,32 +207,23 @@ extension HJCardView {
                 if let farRightItemIndex = self.visiableItems.tailItem()?.index, farRightItemIndex + 1 < numberOfItemsInCardView() {
                     
                     let newItemIndex = farRightItemIndex + 1
+                    let newItem = itemIn(index: newItemIndex)
+                    let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
                     
-                    if let dataSource = self.dataSource {
-                        let newItem = dataSource.cardView(self, itemAt: newItemIndex)
-                        newItem.status = .newItem
-                        newItem.frame.size = itemSize()
-                        
-                        let pan = UIPanGestureRecognizer.init(target: self, action: #selector(panItem(_:)))
-                        newItem.addGestureRecognizer(pan)
-                        
-                        let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
-                        
-                        let farRightItem = self.visiableItems.tailItem()!.item
-                        let distance = farRightItem.center.x
-                        
-                        setItem(newItem, distanceToCenter: 30)
-                        newItem.layer.zPosition = -1000
-                        newItem.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
-                        self.addSubview(newItem)
-                        
-                        UIView.animate(withDuration: 0.25) {
-                            self.setItem(newItem, distanceToCenter: distance)
-                            self.setItemsDefaultDistanceToCenter()
-                        }
-                        
-                        self.visiableItems.addItemToTail(newItemWithIndex)
+                    let farRightItem = self.visiableItems.tailItem()!.item
+                    let distance = farRightItem.center.x
+                    
+                    setItem(newItem, distanceToCenter: 30)
+                    newItem.layer.zPosition = -1000
+                    newItem.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
+                    self.addSubview(newItem)
+                    
+                    UIView.animate(withDuration: 0.25) {
+                        self.setItem(newItem, distanceToCenter: distance)
+                        self.setItemsDefaultDistanceToCenter()
                     }
+                    
+                    self.visiableItems.addItemToTail(newItemWithIndex)
                 }
             
             // move one step to the right
@@ -234,32 +237,23 @@ extension HJCardView {
                 if let farLeftItemIndex = self.visiableItems.headItem()?.index, farLeftItemIndex - 1 >= 0 {
                     
                     let newItemIndex = farLeftItemIndex - 1
+                    let newItem = itemIn(index: newItemIndex)
+                    let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
                     
-                    if let dataSource = self.dataSource {
-                        let newItem = dataSource.cardView(self, itemAt: newItemIndex)
-                        newItem.status = .newItem
-                        newItem.frame.size = itemSize()
-                        
-                        let pan = UIPanGestureRecognizer.init(target: self, action: #selector(panItem(_:)))
-                        newItem.addGestureRecognizer(pan)
-                        
-                        let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
-                        
-                        let farLeftItem = self.visiableItems.headItem()!.item
-                        let distance = farLeftItem.center.x
-                        
-                        setItem(newItem, distanceToCenter: -30)
-                        newItem.layer.zPosition = -1000
-                        newItem.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
-                        self.addSubview(newItem)
-                        
-                        UIView.animate(withDuration: 0.25) {
-                            self.setItem(newItem, distanceToCenter: distance)
-                            self.setItemsDefaultDistanceToCenter()
-                        }
-                        
-                        self.visiableItems.addItemToHead(newItemWithIndex)
+                    let farLeftItem = self.visiableItems.headItem()!.item
+                    let distance = farLeftItem.center.x
+                    
+                    setItem(newItem, distanceToCenter: -30)
+                    newItem.layer.zPosition = -1000
+                    newItem.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
+                    self.addSubview(newItem)
+                    
+                    UIView.animate(withDuration: 0.25) {
+                        self.setItem(newItem, distanceToCenter: distance)
+                        self.setItemsDefaultDistanceToCenter()
                     }
+                    
+                    self.visiableItems.addItemToHead(newItemWithIndex)
                 }
             }
             
@@ -501,6 +495,32 @@ extension HJCardView {
 }
 
 
+// reuse pool for card view
+extension HJCardView {
+    private class HJReusePool {
+        lazy var reusePool: [String: [HJCardViewItem]] = [:]
+        
+        func itemWith(reuseID: String) -> HJCardViewItem? {
+            if reusePool[reuseID]?.count != 0 {
+                let item = reusePool[reuseID]?.removeLast()
+                return item
+            }
+            
+            return nil
+        }
+        
+        func add(item: HJCardViewItem, with reuseID: String) {
+            if reusePool[reuseID] != nil {
+                reusePool[reuseID]?.append(item)
+            } else {
+                let newIDArray = [item]
+                reusePool[reuseID] = newIDArray
+            }
+        }
+    }
+}
+
+
 extension HJCardView {
 
     private func itemSize() -> CGSize {
@@ -595,6 +615,32 @@ extension HJCardView {
     
     private func centerItemIsTailItem() -> Bool {
         return visiableItems.centerItem()?.index == numberOfItemsInCardView() - 1
+    }
+    
+    
+    private func moveItemIntoReusePool(_ item: HJCardViewItem) {
+        item.removeFromSuperview()
+        
+        reusePool.add(item: item, with: (item.reuseID != nil) ? item.reuseID! : "ReuseID_Nil")
+    }
+    
+    private func itemIn(index: Int) -> HJCardViewItem {
+        guard let dataSource = dataSource else {
+            return HJCardViewItem()
+        }
+        
+        let item = dataSource.cardView(self, itemAt: index)
+        item.frame.size = itemSize()
+        item.status = .newItem
+        
+        switch placementDirection {
+        case .horizontal:
+            item.frame.origin.y = self.bounds.origin.y
+        case .vertical:
+            item.frame.origin.x = self.bounds.origin.x
+        }
+
+        return item
     }
 }
 
