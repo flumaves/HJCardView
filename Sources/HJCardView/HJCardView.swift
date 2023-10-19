@@ -14,8 +14,6 @@ public class HJCardView: UIView {
     
     public var dataSource: HJCardViewDataSource?
     
-    private var panAction: UIPanGestureRecognizer?
-    
     /// items shows on the screen
     private var visiableItems: HJCardView.Items = Items()
     
@@ -30,7 +28,9 @@ public class HJCardView: UIView {
         
         let pan = UIPanGestureRecognizer.init(target: self, action: #selector(panItem(_:)))
         self.addGestureRecognizer(pan)
-        self.panAction = pan
+        
+        let tap = UITapGestureRecognizer.init(target: self, action: #selector(tapItem(_:)))
+        self.addGestureRecognizer(tap)
     }
     
     required init?(coder: NSCoder) {
@@ -152,10 +152,22 @@ extension HJCardView {
 // gestures on card view
 extension HJCardView {
     
-    @objc private func clickCenterItem(_ sender: UITapGestureRecognizer) {
-        self.delegate?.centerItemDidSelected(in: self)
+    @objc private func tapItem(_ sender: UITapGestureRecognizer) {
+        guard sender.state == .ended else { return }
+        
+        let point = sender.location(in: self)
+        let viewsContainPoint = self.subViewsContain(point: point)
+        for view in viewsContainPoint {
+            if !view.isKind(of: HJCardViewItem.self) { continue }
+            let item = view as! HJCardViewItem
+            
+            if item.status == .centerItem {
+                self.delegate?.centerItemDidSelected(in: self)
+                return
+            }
+        }
     }
-
+    
     @objc private func panItem(_ sender: UIPanGestureRecognizer) {
         
         let panOffSet = sender.translation(in: self)
@@ -651,5 +663,21 @@ extension HJCardView {
     public enum PlacementDirection {
         case horizontal
         case vertical
+    }
+}
+
+
+extension UIView {
+    
+    public func subViewsContain(point: CGPoint) -> [UIView] {
+        var result: [UIView] = []
+        
+        for subView in self.subviews {
+            if CGRectContainsPoint(subView.frame, point) {
+                result.append(subView)
+            }
+        }
+        
+        return result
     }
 }
