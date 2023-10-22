@@ -171,9 +171,11 @@ extension HJCardView {
     @objc private func panItem(_ sender: UIPanGestureRecognizer) {
         
         let panOffSet = sender.translation(in: self)
+        let velocity = placementDirection == .horizontal ? sender.velocity(in: self).x : sender.velocity(in: self).y
         let center = placementDirection == .horizontal ? self.bounds.width / 2 : self.bounds.height / 2
         
-        if sender.state == .changed {
+        switch sender.state {
+        case .changed:
             // calculate the length that remaining items should move based on the proportion of the distance moved by the center item to the maximum moving distance of the center item
             var distanceCenterItemMove = placementDirection == .horizontal ? panOffSet.x : panOffSet.y
             let maxDistanceCenterItemMove = distanceToCenterOfCenterItem()
@@ -198,8 +200,8 @@ extension HJCardView {
             }
             
             sender.setTranslation(CGPoint.zero, in: self)
-            
-        } else if sender.state == .ended {
+
+        case .ended:
             
             itemsRatioHaveMoved = 0
             
@@ -208,22 +210,22 @@ extension HJCardView {
             let centerItemCenter = placementDirection == .horizontal ? centerItem.center.x : centerItem.center.y
             let ratio = (centerItemCenter - center) / distanceToCenterOfCenterItem()
             
-            // move one step to the left
-            if ratio <= -0.9 {
+            // move one step to the head/tail
+            if ratio <= -0.8 || velocity < -500 {
                 if let centerItemIndex = self.visiableItems.centerItem()?.index, centerItemIndex + 1 < numberOfItemsInCardView() {
                     if let delelteItem = self.visiableItems.allItemsMoveLeft() {
                         delelteItem.removeFromSuperview()
                     }
                 }
                 
-                if let farRightItemIndex = self.visiableItems.tailItem()?.index, farRightItemIndex + 1 < numberOfItemsInCardView() {
+                if let tailItemIndex = self.visiableItems.tailItem()?.index, tailItemIndex + 1 < numberOfItemsInCardView() {
                     
-                    let newItemIndex = farRightItemIndex + 1
+                    let newItemIndex = tailItemIndex + 1
                     let newItem = itemIn(index: newItemIndex)
                     let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
                     
-                    let farRightItem = self.visiableItems.tailItem()!.item
-                    let distance = farRightItem.center.x
+                    let tailItem = self.visiableItems.tailItem()!.item
+                    let distance = tailItem.center.x
                     
                     setItem(newItem, distanceToCenter: 30)
                     newItem.layer.zPosition = -1000
@@ -238,22 +240,21 @@ extension HJCardView {
                     self.visiableItems.addItemToTail(newItemWithIndex)
                 }
             
-            // move one step to the right
-            } else if ratio >= 0.9 {
+            } else if ratio >= 0.8 || velocity > 500 {
                 if let centerItemIndex = self.visiableItems.centerItem()?.index, centerItemIndex - 1 >= 0 {
                     if let deleteItem = self.visiableItems.allItemsMoveRight() {
                         deleteItem.removeFromSuperview()
                     }
                 }
                 
-                if let farLeftItemIndex = self.visiableItems.headItem()?.index, farLeftItemIndex - 1 >= 0 {
+                if let headItemIndex = self.visiableItems.headItem()?.index, headItemIndex - 1 >= 0 {
                     
-                    let newItemIndex = farLeftItemIndex - 1
+                    let newItemIndex = headItemIndex - 1
                     let newItem = itemIn(index: newItemIndex)
                     let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
                     
-                    let farLeftItem = self.visiableItems.headItem()!.item
-                    let distance = farLeftItem.center.x
+                    let headItem = self.visiableItems.headItem()!.item
+                    let distance = headItem.center.x
                     
                     setItem(newItem, distanceToCenter: -30)
                     newItem.layer.zPosition = -1000
@@ -272,6 +273,8 @@ extension HJCardView {
             UIView.animate(withDuration: 0.25) {
                 self.setItemsDefaultDistanceToCenter()
             }
+        default:
+            break
         }
     }
     
