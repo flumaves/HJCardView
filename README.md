@@ -8,7 +8,7 @@ The appearance style of card view can be highly customized through delegate, suc
 
 Please read the comments of the methods in delegate to learn how to use it.
 
-![ScreenShoot](.Sources/ScreenShoot.mp4)
+![ScreenShoot](./ScreenShoot/screenShoot.gif)
 
 ## Usage
     class SomeViewController: UIViewController {
