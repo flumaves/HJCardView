@@ -41,22 +41,9 @@ public class HJCardView: UIView {
         
         if self.visiableItems.count() > 0 { return }
         
-        guard let dataSource = self.dataSource else { return }
-        
         for index in 0..<numberOfItemsInBothDirection() {
-            let item = dataSource.cardView(self, itemAt: index)
-            item.bounds.size = itemSize()
-            
-            let pan = UIPanGestureRecognizer.init(target: self, action: #selector(panItem(_:)))
-            item.addGestureRecognizer(pan)
-            
-            switch placementDirection {
-            case .horizontal:
-                item.frame.origin.y = self.bounds.origin.y
-            case .vertical:
-                item.frame.origin.x = self.bounds.origin.x
-            }
-            
+            guard let item = itemIn(index: index) else { break }
+
             self.sendSubviewToBack(item)
             self.addSubview(item)
             
@@ -85,21 +72,21 @@ extension HJCardView {
         
         updateItemsStatus()
         
-        let spaceBetweenItem = distanceToCenterOfEdgeItem() / CGFloat((numberOfItemsInBothDirection() - 1))
-
-        let rightItems = self.visiableItems.itemsFromCenterToTail()
+        let spaceInTailItems = distanceToCenterOfEdgeItem() / CGFloat((numberOfItemsInTailDirection() - 1))
+        let tailItems = self.visiableItems.itemsFromCenterToTail()
         
-        for index in 0..<rightItems.count {
-            let distance = CGFloat(index) * spaceBetweenItem
-            let item = rightItems[index]
+        for index in 0..<tailItems.count {
+            let distance = CGFloat(index) * spaceInTailItems
+            let item = tailItems[index]
             setItem(item, distanceToCenter: distance)
         }
 
-        let leftItems = self.visiableItems.itemsFromCenterToHead()
+        let spaceInHeadItems = distanceToCenterOfEdgeItem() / CGFloat((numberOfItemsInHeadDirection() - 1))
+        let headItems = self.visiableItems.itemsFromCenterToHead()
         
-        for index in 0..<leftItems.count {
-            let distance = CGFloat(index * -1) * spaceBetweenItem
-            let item = leftItems[index]
+        for index in 0..<headItems.count {
+            let distance = CGFloat(index * -1) * spaceInHeadItems
+            let item = headItems[index]
             setItem(item, distanceToCenter: distance)
         }
     }
@@ -203,6 +190,12 @@ extension HJCardView {
 
         case .ended:
             
+            defer {
+                UIView.animate(withDuration: 0.25) {
+                    self.setItemsDefaultDistanceToCenter()
+                }
+            }
+            
             itemsRatioHaveMoved = 0
             
             // determine whether to update or restore based on the proportion of center item movement
@@ -213,65 +206,53 @@ extension HJCardView {
             // move one step to the head/tail
             if ratio <= -0.8 || velocity < -500 {
                 if let centerItemIndex = self.visiableItems.centerItem()?.index, centerItemIndex + 1 < numberOfItemsInCardView() {
-                    if let delelteItem = self.visiableItems.allItemsMoveLeft() {
+                    if let delelteItem = self.visiableItems.allItemsMoveHead() {
                         delelteItem.removeFromSuperview()
                     }
                 }
                 
-                if let tailItemIndex = self.visiableItems.tailItem()?.index, tailItemIndex + 1 < numberOfItemsInCardView() {
+                if let tailItemWithIndex = self.visiableItems.tailItem() {
+                    let newItemIndex = tailItemWithIndex.index + 1
                     
-                    let newItemIndex = tailItemIndex + 1
-                    let newItem = itemIn(index: newItemIndex)
+                    guard let newItem = itemIn(index: newItemIndex) else { return }
                     let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
                     
-                    let tailItem = self.visiableItems.tailItem()!.item
-                    let distance = tailItem.center.x
+                    let spaceInTailItems = distanceToCenterOfEdgeItem() / CGFloat((numberOfItemsInTailDirection() - 1))
+                    var distance = CGFloat(visiableItems.itemsFromCenterToTail().count - 1) * spaceInTailItems
+                    distance = distance > 0 ? distance : 0
                     
-                    setItem(newItem, distanceToCenter: 30)
+                    setItem(newItem, distanceToCenter: distance)
                     newItem.layer.zPosition = -1000
-                    newItem.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
+                    newItem.transform = newItem.transform.concatenating(CGAffineTransform(scaleX: 0.9, y: 0.9))
+                    
                     self.addSubview(newItem)
-                    
-                    UIView.animate(withDuration: 0.25) {
-                        self.setItem(newItem, distanceToCenter: distance)
-                        self.setItemsDefaultDistanceToCenter()
-                    }
-                    
                     self.visiableItems.addItemToTail(newItemWithIndex)
                 }
             
             } else if ratio >= 0.8 || velocity > 500 {
                 if let centerItemIndex = self.visiableItems.centerItem()?.index, centerItemIndex - 1 >= 0 {
-                    if let deleteItem = self.visiableItems.allItemsMoveRight() {
+                    if let deleteItem = self.visiableItems.allItemsMoveTail() {
                         deleteItem.removeFromSuperview()
                     }
                 }
                 
-                if let headItemIndex = self.visiableItems.headItem()?.index, headItemIndex - 1 >= 0 {
+                if let headItemWithIndex = self.visiableItems.headItem() {
+                    let newItemIndex = headItemWithIndex.index - 1
                     
-                    let newItemIndex = headItemIndex - 1
-                    let newItem = itemIn(index: newItemIndex)
+                    guard let newItem = itemIn(index: newItemIndex) else { return }
                     let newItemWithIndex = ItemWithIndex(item: newItem, index: newItemIndex)
                     
-                    let headItem = self.visiableItems.headItem()!.item
-                    let distance = headItem.center.x
+                    let spaceInHeadItems = distanceToCenterOfEdgeItem() / CGFloat((numberOfItemsInHeadDirection() - 1))
+                    var distance = CGFloat(visiableItems.itemsFromCenterToHead().count - 1) * spaceInHeadItems
+                    distance = distance > 0 ? distance : 0
                     
-                    setItem(newItem, distanceToCenter: -30)
+                    setItem(newItem, distanceToCenter: -distance)
                     newItem.layer.zPosition = -1000
-                    newItem.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
+                    newItem.transform = newItem.transform.concatenating(CGAffineTransform(scaleX: 0.9, y: 0.9)) 
+                    
                     self.addSubview(newItem)
-                    
-                    UIView.animate(withDuration: 0.25) {
-                        self.setItem(newItem, distanceToCenter: distance)
-                        self.setItemsDefaultDistanceToCenter()
-                    }
-                    
                     self.visiableItems.addItemToHead(newItemWithIndex)
                 }
-            }
-            
-            UIView.animate(withDuration: 0.25) {
-                self.setItemsDefaultDistanceToCenter()
             }
         default:
             break
@@ -404,7 +385,7 @@ extension HJCardView {
          * all items move one step to the head/tail
          * if the number of items on head/tail exceeds number of items corresponding to the direction, the most head/tail item will be deleted and returned
          */
-        func allItemsMoveLeft() -> HJCardViewItem? {
+        func allItemsMoveHead() -> HJCardViewItem? {
             guard let newCenterNode = self.centerNode?.nextNode else { return nil }
             
             self.centerNode = newCenterNode
@@ -416,7 +397,7 @@ extension HJCardView {
             return nil
         }
         
-        func allItemsMoveRight() -> HJCardViewItem? {
+        func allItemsMoveTail() -> HJCardViewItem? {
             guard let newCenterNode = self.centerNode?.preNode else { return nil }
             
             self.centerNode = newCenterNode
@@ -639,9 +620,9 @@ extension HJCardView {
         reusePool.add(item: item, with: (item.reuseID != nil) ? item.reuseID! : "ReuseID_Nil")
     }
     
-    private func itemIn(index: Int) -> HJCardViewItem {
+    private func itemIn(index: Int) -> HJCardViewItem? {
         guard let dataSource = dataSource else {
-            return HJCardViewItem()
+            return nil
         }
         
         let item = dataSource.cardView(self, itemAt: index)
