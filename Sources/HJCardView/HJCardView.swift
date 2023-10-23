@@ -248,7 +248,7 @@ extension HJCardView {
                     
                     setItem(newItem, distanceToCenter: -distance)
                     newItem.layer.zPosition = -1000
-                    newItem.transform = newItem.transform.concatenating(CGAffineTransform(scaleX: 0.9, y: 0.9)) 
+                    newItem.transform = newItem.transform.concatenating(CGAffineTransform(scaleX: 0.9, y: 0.9))
                     
                     self.addSubview(newItem)
                     self.visiableItems.addItemToHead(newItemWithIndex)
@@ -621,9 +621,8 @@ extension HJCardView {
     }
     
     private func itemIn(index: Int) -> HJCardViewItem? {
-        guard let dataSource = dataSource else {
-            return nil
-        }
+        guard let dataSource = dataSource else { return nil }
+        if index < 0 || index > numberOfItemsInCardView() { return nil }
         
         let item = dataSource.cardView(self, itemAt: index)
         item.frame.size = itemSize()
