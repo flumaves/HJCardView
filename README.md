@@ -3,11 +3,14 @@
 A view that shows a serious of Cards
 
 The usage is similar to UITableView, only need to comply with HJCardViewDelegate and HJCardViewDataSource.
+
 The appearance style of card view can be highly customized through delegate, such as placement direction, rotate angle, etc.
+
 Please read the comments of the methods in delegate to learn how to use it.
 
+![ScreenShoot](.Sources/ScreenShoot.mp4)
+
 ## Usage
-`
     class SomeViewController: UIViewController {
 
         var cardView: HJCardView?
@@ -46,4 +49,4 @@ Please read the comments of the methods in delegate to learn how to use it.
             return item
         }
     }
-`
+
