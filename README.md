@@ -8,42 +8,42 @@ Please read the comments of the methods in delegate to learn how to use it.
 
 ## Usage
 `
-class SomeViewController: UIViewController {
+    class SomeViewController: UIViewController {
 
-    var cardView: HJCardView?
+        var cardView: HJCardView?
     
-    override func viewDidLoad() {
+        override func viewDidLoad() {
         
-        let cardView = HJCardView(frame: CGRect(x: 0, y: 200, width: UIScreen.main.bounds.size.width, height: 300))
-        cardView.delegate = self
-        cardView.dataSource = self
-//        cardView.placementDirection = .vertical
+            let cardView = HJCardView(frame: CGRect(x: 0, y: 200, width: UIScreen.main.bounds.size.width, height: 300))
+            cardView.delegate = self
+            cardView.dataSource = self
+            //cardView.placementDirection = .vertical
 
-        self.view.addSubview(cardView)
+            self.view.addSubview(cardView)
+        }
     }
-}
 
 
-extension SomeViewController: HJCardViewDataSource, HJCardViewDelegate {
+    extension SomeViewController: HJCardViewDataSource, HJCardViewDelegate {
 
-    func itemSize(in cardView: HJCardView) -> CGSize {
-        return CGSize(width: 150, height: 200)
-    }
-    
-    func centerItemDidSelected(in cardView: HJCardView) {
-        print("center item did selected")
-    }
-    
-    func numberOfItems(in cardView: HJCardView) -> Int {
-        return 10
-    }
-    
-    func cardView(_ cardView: HJCardView, itemAt index: Int) -> HJCardViewItem {
-    
-        let item = HJCardViewItem()
-        item.backgroundColor = .random()
+        func itemSize(in cardView: HJCardView) -> CGSize {
+            return CGSize(width: 150, height: 200)
+        }
+        
+        func centerItemDidSelected(in cardView: HJCardView) {
+            print("center item did selected")
+        }
+        
+        func numberOfItems(in cardView: HJCardView) -> Int {
+            return 10
+        }
+        
+        func cardView(_ cardView: HJCardView, itemAt index: Int) -> HJCardViewItem {
+        
+            let item = HJCardViewItem()
+            item.backgroundColor = .random()
 
-        return item
+            return item
+        }
     }
-}
 `
