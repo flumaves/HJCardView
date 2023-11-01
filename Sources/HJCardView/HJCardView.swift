@@ -38,19 +38,9 @@ public class HJCardView: UIView {
     }
     
     public override func layoutSubviews() {
-        
         if self.visiableItems.count() > 0 { return }
-        
-        for index in 0..<numberOfItemsInBothDirection() {
-            guard let item = itemIn(index: index) else { break }
 
-            self.sendSubviewToBack(item)
-            self.addSubview(item)
-            
-            let itemWithIndex = ItemWithIndex(item: item, index: index)
-            self.visiableItems.addItemToTail(itemWithIndex)
-        }
-        
+        addItems()
         setItemsDefaultDistanceToCenter()
     }
 }
@@ -58,8 +48,25 @@ public class HJCardView: UIView {
 
 // MARK: public methods
 extension HJCardView {
+    
+    /// get the reusable cell from the reuse pool accroding to the reuseID, if not, return nil
     public func dequeueReusableItemWith(identifier reuseID: String) -> HJCardViewItem? {
         return reusePool.itemWith(reuseID: reuseID)
+    }
+    
+    /// card view reload data from data source
+    public func reloadData() {
+        for item in visiableItems {
+            moveItemIntoReusePool(item)
+        }
+    
+        addItems()
+        setItemsDefaultDistanceToCenter()
+    }
+    
+    /// card view update appearance accroding to delegate
+    public func updateAppearance() {
+        setItemsDefaultDistanceToCenter()
     }
 }
 
@@ -523,7 +530,7 @@ extension HJCardView {
         if let delegate = delegate, delegate.itemSize(in: self) != CGSize.zero {
             return delegate.itemSize(in: self)
         }
-        
+        // default item size
         let itemH = self.frame.height * 0.8, itemW = itemH * 3 / 4
         return CGSize(width: itemW, height: itemH)
     }
@@ -613,13 +620,14 @@ extension HJCardView {
         return visiableItems.centerItem()?.index == numberOfItemsInCardView() - 1
     }
     
-    
+    // add item into reuse pool and remove item from card view at the same time
     private func moveItemIntoReusePool(_ item: HJCardViewItem) {
         item.removeFromSuperview()
         
         reusePool.add(item: item, with: (item.reuseID != nil) ? item.reuseID! : "ReuseID_Nil")
     }
     
+    // get item in index from data Source, if dataSource is nil, return nil
     private func itemIn(index: Int) -> HJCardViewItem? {
         guard let dataSource = dataSource else { return nil }
         if index < 0 || index > numberOfItemsInCardView() { return nil }
@@ -636,6 +644,19 @@ extension HJCardView {
         }
 
         return item
+    }
+    
+    // the method would be call when card view load data, at this time, visiableItems is empty
+    private func addItems() {
+        for index in 0..<(numberOfItemsInHeadDirection() + numberOfItemsInTailDirection() - 1) {
+            guard let item = itemIn(index: index) else { break }
+
+            self.sendSubviewToBack(item)
+            self.addSubview(item)
+            
+            let itemWithIndex = ItemWithIndex(item: item, index: index)
+            self.visiableItems.addItemToTail(itemWithIndex)
+        }
     }
 }
 
